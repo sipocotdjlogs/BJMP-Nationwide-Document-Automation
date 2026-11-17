@@ -43,7 +43,7 @@ textarea{width:100%;min-height:90px;padding:12px 13px;border:1px solid #d3dee7;b
 .preview-tools{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
 .preview-frame{background:#e8eef3;padding:12px;border-radius:10px;overflow:auto;max-height:820px}
 .paper{background:#fff;color:#111;width:210mm;min-height:297mm;margin:0 auto 12px;padding:25.4mm;box-shadow:0 2px 12px #0002;font:12pt Tahoma,Arial,sans-serif;line-height:1.25;white-space:normal}
-.paper .letterhead{text-align:center;line-height:1.15;margin-bottom:18px;font-size:10pt}
+.paper .logo-strip{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.paper .logo-strip img{width:62px;height:62px;object-fit:contain}.paper .letterhead{text-align:center;line-height:1.15;margin-bottom:18px;font-size:10pt}
 .paper .doc-title{text-align:left;font-weight:bold;margin:16px 0}
 .paper p{margin:0 0 10px;white-space:pre-wrap}
 .paper .routing{margin:24px 0 18px;line-height:1.25}
@@ -57,6 +57,13 @@ textarea{width:100%;min-height:90px;padding:12px 13px;border:1px solid #d3dee7;b
 @media print{body *{visibility:hidden!important}#printArea,#printArea *{visibility:visible!important}#printArea{position:absolute;left:0;top:0;width:100%}.paper{width:auto;min-height:0;margin:0;padding:20mm;box-shadow:none;page-break-after:always}.paper:last-child{page-break-after:auto}}
 @page{size:A4;margin:0}
 @media(max-width:760px){.paper{width:100%;min-height:0;padding:18px;font-size:11pt}.preview-frame{padding:5px}}
+
+#aarCompleteInputs .doc-section{margin-top:10px;background:#fbfdff}
+#aarCompleteInputs .doc-section h3{background:#eaf2f7;color:#173b55;border-left:4px solid #168cb0}
+#aarCompleteInputs textarea{min-height:72px}
+.repeat-row{border:1px solid #dce5ed;border-radius:10px;padding:10px;margin:8px 0;background:#fff}
+.repeat-row .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.repeat-row button{margin-top:8px;padding:7px 10px}
 </style><script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script><script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js"></script></head><body>
 <header><div class="wrap">
 <div class="brandhead">
@@ -84,7 +91,41 @@ textarea{width:100%;min-height:90px;padding:12px 13px;border:1px solid #d3dee7;b
 <h2>Document Center</h2>
 <p class="hint">Pumili ng isang document type. Ipapakita lamang ang mga field na kailangan para sa napiling dokumento. Ang output ay draft at kailangang i-review laban sa kasalukuyang controlled BJMP template bago pirmahan o ilabas.</p>
 <div class="doc-type-bar"><label for="dType">Piliin ang dokumento</label><select id="dType"><option>After Activity Report (AAR)</option><option>Memorandum</option><option>Memorandum Request</option><option>Communication Letter</option><option>Spot Report</option><option>Progress Report</option><option>Minutes of Meeting</option><option>General Order</option><option>Special Order</option></select><div id="aarLayoutWrap"><label for="aarLayout">AAR format / source template</label><select id="aarLayout"><option value="sipocot2026">Sipocot District Jail – November 17, 2026 format</option><option value="regional2025">BJMPRO V / Sipocot – May 20, 2025 format</option></select></div></div>
-<div class="doc-workspace"><div class="doc-form">
+
+<div class="doc-workspace"><div class="doc-form"><div id="aarCompleteInputs" class="doc-section" style="display:none">
+<h3>Complete AAR Input Form — Master Content Layout</h3>
+<p class="smallhint">Fill each field separately. Add as many references, participants and narrative paragraphs as needed. Fields below follow the uploaded dines.docx content order.</p>
+<div class="doc-section"><h3>Memorandum Routing</h3><div class="docgrid">
+<div class="wide"><label>FOR — Name, rank and title</label><input id="aarForName" placeholder="e.g. JOSE GEMELO C TAOL, DSC"></div>
+<div class="wide"><label>FOR — Office / designation line 2</label><input id="aarForOffice" placeholder="e.g. Jail Senior Superintendent"></div>
+<div class="wide"><label>FOR — Office / attention line 3</label><input id="aarForAttention" placeholder="e.g. Regional Director of the Jail Bureau, BJMPRO-V (Attn: C, Operations Div)"></div>
+<div class="wide"><label>THRU — Name, rank and title (if applicable)</label><input id="aarThruName" placeholder="Name and rank"></div>
+<div class="wide"><label>THRU — Office / designation</label><input id="aarThruOffice" placeholder="Office / designation"></div>
+<div class="wide"><label>SUBJECT</label><input id="aarSubject" placeholder="Complete subject"></div>
+<div><label>Memorandum date</label><input id="aarMemoDate" type="date"></div>
+</div></div>
+<div class="doc-section"><h3>1. REFERENCE/S</h3><div id="aarReferences"></div><button type="button" class="secondary" id="addReference">+ Add reference</button></div>
+<div class="doc-section"><h3>2. MISSION/PURPOSE</h3><label>Mission / Purpose</label><textarea id="aarMission" placeholder="State the objective and purpose of the activity."></textarea></div>
+<div class="doc-section"><h3>3. PLACE/S COVERED</h3><label>Place / Facility / Location</label><input id="aarPlace" placeholder="Exact place covered"></div>
+<div class="doc-section"><h3>4. DATE COVERED</h3><div class="docgrid">
+<div><label>Activity date</label><input id="aarDateCovered" type="date"></div>
+<div><label>Activity start time (suggested from earliest photo)</label><input id="aarStartTime" type="time"></div>
+<div><label>Activity end time</label><input id="aarEndTime" type="time"></div>
+<div class="wide"><label>Other date/time details</label><input id="aarDateNotes" placeholder="Optional details / inclusive dates"></div>
+</div><p class="smallhint">The earliest valid photo EXIF timestamp is only a suggested start time. Confirm or correct it before generating the report.</p></div>
+<div class="doc-section"><h3>5. PARTICIPANT/S</h3><div id="aarParticipants"></div><button type="button" class="secondary" id="addParticipant">+ Add participant</button></div>
+<div class="doc-section"><h3>6. NARRATIVE</h3><p class="smallhint">Add individual paragraphs in chronological order. Each paragraph will be lettered a, b, c, d automatically.</p><div id="aarNarratives"></div><button type="button" class="secondary" id="addNarrative">+ Add narrative paragraph</button></div>
+<div class="doc-section"><h3>7. ISSUES/CONCERNS/RECOMMENDATIONS</h3>
+<div class="docgrid"><div class="wide"><label>Issues</label><textarea id="aarIssues" placeholder="Issues identified"></textarea></div><div class="wide"><label>Concerns</label><textarea id="aarConcerns" placeholder="Concerns requiring attention"></textarea></div><div class="wide"><label>Recommendations</label><textarea id="aarRecommendations" placeholder="Recommended action"></textarea></div><div class="wide"><label>Supporting documentation / attachments</label><textarea id="aarAttachments" placeholder="List attached documents or photo documentation"></textarea></div></div></div>
+<div class="doc-section"><h3>Prepared / Signature Block</h3><div class="docgrid">
+<div><label>Signatory full name</label><input id="aarSignName" value="ISRAELITO D BARRUN"></div>
+<div><label>Rank</label><input id="aarSignRank" value="Jail Inspector"></div>
+<div class="wide"><label>Designation</label><input id="aarSignDesignation" value="Acting Warden"></div>
+<div><label>Noted by (optional)</label><input id="aarNotedBy"></div>
+</div></div>
+</div>
+
+
 <div class="doc-section"><h3>1. Document details</h3><div class="docgrid">
 <div><label>Document date</label><input id="dDate" type="date"></div><div><label>Office / Unit</label><input id="dOffice" value="SIPOCOT DISTRICT JAIL"></div>
 <div><label>Reference number (if assigned)</label><input id="dRef" placeholder="Enter authorized reference number"></div><div><label>To / Recipient</label><input id="dTo" placeholder="Name, rank/title, office"></div><div id="thruField"><label>THRU (if applicable)</label><input id="dThru" placeholder="Name, rank/title, office"></div>
@@ -152,17 +193,17 @@ function refreshAarMode(){
 function renderAarPreview(){
  const d=data(),p=$('paperPreview'),aar=d.type==='After Activity Report (AAR)',old=aar&&d.layout==='regional2025';let h='';
  if(old){
-  h=`<div class="small-office">Republic of the Philippines<br>Department of the Interior and Local Government<br><b>BUREAU OF JAIL MANAGEMENT AND PENOLOGY</b><br>REGIONAL OFFICE V<br><b>${safe(d.office||'SIPOCOT DISTRICT JAIL')}</b><br>Awayan, Sipocot, Camarines Sur<br>r5.sipocotdi@bjmp.gov.ph<br>09303359659</div><div style="text-align:right;margin:22px 0 12px;font-size:9pt">SDJLOGISTIC</div><div class="doc-title">MEMORANDUM</div><div class="routing">`;
+  h=`<div class="logo-strip"><img src="assets/bjmp-seal.jpeg" alt="BJMP seal"><img src="assets/sipocot-unit-mark.png" alt="Sipocot District Jail logo"></div><div class="small-office">Republic of the Philippines<br>Department of the Interior and Local Government<br><b>BUREAU OF JAIL MANAGEMENT AND PENOLOGY</b><br>REGIONAL OFFICE V<br><b>${safe(d.office||'SIPOCOT DISTRICT JAIL')}</b><br>Awayan, Sipocot, Camarines Sur<br>r5.sipocotdi@bjmp.gov.ph<br>09303359659</div><div style="text-align:right;margin:22px 0 12px;font-size:9pt">SDJLOGISTIC</div><div class="doc-title">MEMORANDUM</div><div class="routing">`;
   [['FOR',d.to],['THRU',d.thru],['SUBJECT',d.subject],['DATE',d.date]].forEach(([k,v])=>{if(v)h+=`<div class="routing-row"><b>${k}</b><div>: ${safe(v)}</div></div>`});h+='</div>';
   [['REFERENCES:',d.ref],['MISSION/ PURPOSE:',d.what],['PLACE/S COVERED:',d.where],['DATE COVERED:',d.when],['PARTICIPANTS:',d.who],['NARRATIVE:',d.details],['ISSUES/CONCERNS/RECOMMENDATIONS:',d.action]].forEach(([k,v])=>h+=`<p class="section-line"><b>${k}</b> ${safe(v)}</p>`);
   if(d.approved)h+=`<p class="signature">${safe(d.approved)}</p><p>Jail Inspector<br>Acting Warden</p>`;
  }else if(aar){
-  h=`<div class="letterhead">Republic of the Philippines<br>Department of the Interior and Local Government<br><b>BUREAU OF JAIL MANAGEMENT AND PENOLOGY</b><br><b>${safe(d.office||'SIPOCOT DISTRICT JAIL')}</b><br>Awayan, Sipocot, Camarines Sur<br>0930 335 9659 | r5.sipocotdi@bjmp.gov.ph<br>“Changing Lives, Building a Safer Nation”</div><div class="doc-title">MEMORANDUM</div>`;
+  h=`<div class="logo-strip"><img src="assets/bjmp-seal.jpeg" alt="BJMP seal"><img src="assets/sipocot-unit-mark.png" alt="Sipocot District Jail logo"></div><div class="letterhead">Republic of the Philippines<br>Department of the Interior and Local Government<br><b>BUREAU OF JAIL MANAGEMENT AND PENOLOGY</b><br><b>${safe(d.office||'SIPOCOT DISTRICT JAIL')}</b><br>Awayan, Sipocot, Camarines Sur<br>0930 335 9659 | r5.sipocotdi@bjmp.gov.ph<br>“Changing Lives, Building a Safer Nation”</div><div class="doc-title">MEMORANDUM</div>`;
   if(d.to)h+=`<p><b>FOR :</b> ${safe(d.to)}</p>`;if(d.subject)h+=`<p><b>SUBJECT :</b> ${safe(d.subject)}</p>`;if(d.date)h+=`<p><b>DATE :</b> ${safe(d.date)}</p>`;
   [['1. REFERENCE/S',d.ref],['2. MISSION/PURPOSE',d.what],['3. PLACES COVERED:',d.where],['4. DATE COVERED:',d.when],['5. PARTICIPANTS:',d.who],['6. NARRATIVE',d.details],['7. ISSUES/CONCERNS/RECOMMENDATIONS',d.action]].forEach(([k,v])=>h+=`<p class="section-line"><b>${k}</b>${v?' '+safe(v):''}</p>`);
   if(d.approved)h+=`<p class="signature">${safe(d.approved)}</p>`;
  }else{
-  h=`<div class="letterhead">Republic of the Philippines<br>Department of the Interior and Local Government<br><b>BUREAU OF JAIL MANAGEMENT AND PENOLOGY</b><br><b>${safe(d.office||'SIPOCOT DISTRICT JAIL')}</b><br>Awayan, Sipocot, Camarines Sur<br>“Changing Lives, Building a Safer Nation”</div><div class="doc-title">${safe(d.type).toUpperCase()}</div>`;
+  h=`<div class="logo-strip"><img src="assets/bjmp-seal.jpeg" alt="BJMP seal"><img src="assets/sipocot-unit-mark.png" alt="Sipocot District Jail logo"></div><div class="letterhead">Republic of the Philippines<br>Department of the Interior and Local Government<br><b>BUREAU OF JAIL MANAGEMENT AND PENOLOGY</b><br><b>${safe(d.office||'SIPOCOT DISTRICT JAIL')}</b><br>Awayan, Sipocot, Camarines Sur<br>“Changing Lives, Building a Safer Nation”</div><div class="doc-title">${safe(d.type).toUpperCase()}</div>`;
   [['FOR',d.to],['FROM',d.from],['SUBJECT',d.subject],['DATE',d.date]].forEach(([k,v])=>{if(v)h+=`<p><b>${k}:</b> ${safe(v)}</p>`});
   [['1. REFERENCE / PURPOSE',d.what],['2. ACTIVITY / INCIDENT DETAILS',`When: ${d.when}\nWhere: ${d.where}\nWho: ${d.who}`],['3. NARRATIVE',d.details],['4. ACCOMPLISHMENTS / ACTIONS / RECOMMENDATIONS',d.action]].forEach(([k,v])=>{if(v)h+=`<p><b>${k}</b></p><p>${safe(v)}</p>`});
  }
@@ -183,6 +224,11 @@ async function readPhotoFiles(files){
  const first=uploadedPhotos.find(x=>x.date);
  $('photoStart').value=first?fmtDate(first.date):'No readable EXIF timestamp';
  $('confirmedStart').value=first?fmtDate(first.date):'';
+ if(first && $('dType').value==='After Activity Report (AAR)'){
+  $('aarDateCovered').value=first.date.toISOString().slice(0,10);
+  $('aarStartTime').value=first.date.toTimeString().slice(0,5);
+  syncAarFields();
+ }
  $('photoStatus').textContent=`${uploadedPhotos.length} photos loaded; ${uploadedPhotos.filter(x=>x.date).length} with EXIF capture time.`;
  $('photoList').innerHTML=uploadedPhotos.map((ph,i)=>`<div class="photo-card"><img src="${ph.url}"><div class="hint">#${i+1} · ${ph.date?esc(fmtDate(ph.date)):'No EXIF time'}</div><input data-cap="${i}" value="${esc(ph.caption)}" aria-label="Photo caption"></div>`).join('');
  document.querySelectorAll('[data-cap]').forEach(el=>el.addEventListener('input',e=>{uploadedPhotos[+e.target.dataset.cap].caption=e.target.value;renderAarPreview();}));
@@ -201,6 +247,7 @@ $('generateDocx').onclick=async()=>{
   const lib=window.docx;if(!lib)throw Error('DOCX library not loaded. Check internet connection and reload.');
   const {Document,Packer,Paragraph,TextRun,AlignmentType,ImageRun}=lib,children=[],center=AlignmentType.CENTER;
   const aar=d.type==='After Activity Report (AAR)',old=aar&&d.layout==='regional2025';
+  if(aar){try{const [seal,unit]=await Promise.all([fetch('assets/bjmp-seal.jpeg').then(r=>r.arrayBuffer()),fetch('assets/sipocot-unit-mark.png').then(r=>r.arrayBuffer())]);children.push(new Paragraph({alignment:center,children:[new ImageRun({data:new Uint8Array(seal),transformation:{width:58,height:58}}),new TextRun({text:'     ',font:'Tahoma',size:18}),new ImageRun({data:new Uint8Array(unit),transformation:{width:58,height:58}})],spacing:{after:100}}));}catch(e){}}
   const para=(t,b=false,align)=>new Paragraph({alignment:align,children:[new TextRun({text:String(t||''),bold:b,font:'Tahoma',size:24})],spacing:{after:160}});
   if(old){
    children.push(new Paragraph({alignment:center,children:[new TextRun({text:'Republic of the Philippines\nDepartment of the Interior and Local Government\n',font:'Tahoma',size:20}),new TextRun({text:'BUREAU OF JAIL MANAGEMENT AND PENOLOGY\nREGIONAL OFFICE V\n',bold:true,font:'Tahoma',size:22}),new TextRun({text:(d.office||'SIPOCOT DISTRICT JAIL')+'\nAwayan, Sipocot, Camarines Sur\nr5.sipocotdi@bjmp.gov.ph\n09303359659',font:'Tahoma',size:18})],spacing:{after:250}}));
@@ -223,5 +270,75 @@ $('generateDocx').onclick=async()=>{
   const blob=await Packer.toBlob(doc),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=(old?'AAR_RegionalOfficeV_2025_':aar?'AAR_Sipocot_2026_':'BJMP_Document_')+(d.date||new Date().toISOString().slice(0,10))+'.docx';a.click();setTimeout(()=>URL.revokeObjectURL(url),5000);status.textContent='DOCX generated. Review against the uploaded source template and current controlled BJMP format before official use.';
  }catch(e){status.textContent='DOCX generation failed: '+e.message;alert(e.message);}
 };
+
+// Complete AAR form: independent fields and repeatable reference, participant and narrative rows.
+function addRepeat(containerId,kind,values={}){
+ const box=document.createElement('div');box.className='repeat-row';
+ const escv=v=>esc(v||'');
+ if(kind==='reference')box.innerHTML=`<div class="grid"><div><label>Reference type / source</label><input class="r-type" placeholder="Memorandum / Blotter / Letter" value="${escv(values.type)}"></div><div><label>Reference number</label><input class="r-no" placeholder="Document / blotter number" value="${escv(values.no)}"></div><div class="wide"><label>Subject / description</label><input class="r-subject" placeholder="Subject or description" value="${escv(values.subject)}"></div><div><label>Date</label><input class="r-date" type="date" value="${escv(values.date)}"></div></div>`;
+ if(kind==='participant')box.innerHTML=`<div class="grid"><div><label>Rank</label><input class="p-rank" placeholder="Rank" value="${escv(values.rank)}"></div><div><label>Full name</label><input class="p-name" placeholder="Full name" value="${escv(values.name)}"></div><div><label>Designation / position</label><input class="p-designation" placeholder="Designation" value="${escv(values.designation)}"></div><div><label>Office / unit</label><input class="p-office" placeholder="Office / Unit" value="${escv(values.office)}"></div></div>`;
+ if(kind==='narrative')box.innerHTML=`<label>Narrative paragraph</label><textarea class="n-text" placeholder="Describe the activity in chronological order...">${escv(values.text)}</textarea>`;
+ const del=document.createElement('button');del.type='button';del.className='secondary';del.textContent='Remove';del.onclick=()=>{box.remove();syncAarFields();renderAarPreview();};box.appendChild(del);
+ box.querySelectorAll('input,textarea').forEach(el=>el.addEventListener('input',()=>{syncAarFields();renderAarPreview();}));
+ $(containerId).appendChild(box);syncAarFields();return box;
+}
+function repeatValues(id,kind){
+ return [...$(id).querySelectorAll('.repeat-row')].map(row=>{
+  const val=sel=>row.querySelector(sel)?.value?.trim()||'';
+  if(kind==='reference')return {type:val('.r-type'),no:val('.r-no'),subject:val('.r-subject'),date:val('.r-date')};
+  if(kind==='participant')return {rank:val('.p-rank'),name:val('.p-name'),designation:val('.p-designation'),office:val('.p-office')};
+  return {text:val('.n-text')};
+ });
+}
+function syncAarFields(){
+ if($('dType').value!=='After Activity Report (AAR)')return;
+ const refs=repeatValues('aarReferences','reference'),parts=repeatValues('aarParticipants','participant'),narr=repeatValues('aarNarratives','narrative');
+ $('dTo').value=[$('aarForName').value,$('aarForOffice').value,$('aarForAttention').value].filter(Boolean).join('\n');
+ $('dThru').value=[$('aarThruName').value,$('aarThruOffice').value].filter(Boolean).join('\n');
+ $('dSubject').value=$('aarSubject').value;
+ $('dDate').value=$('aarMemoDate').value;
+ $('dRef').value=refs.map((r,i)=>`${String.fromCharCode(97+i)}. ${[r.type,r.no,r.subject,r.date].filter(Boolean).join(' — ')}`).join('\n');
+ $('dWhat').value=$('aarMission').value;
+ $('dWhere').value=$('aarPlace').value;
+ $('dWhen').value=[$('aarDateCovered').value,$('aarStartTime').value,$('aarEndTime').value,$('aarDateNotes').value].filter(Boolean).join(' | ');
+ $('dWho').value=parts.map((p,i)=>`${i+1}. ${[p.rank,p.name,p.designation,p.office].filter(Boolean).join(' ')}`).join('\n');
+ $('dDetails').value=narr.map((n,i)=>`${String.fromCharCode(97+i)}. ${n.text}`).join('\n');
+ $('dAction').value=[['Issues', $('aarIssues').value],['Concerns',$('aarConcerns').value],['Recommendations',$('aarRecommendations').value],['Supporting documentation',$('aarAttachments').value]].filter(x=>x[1].trim()).map(x=>x[0]+': '+x[1]).join('\n\n');
+ $('dApproved').value=[$('aarSignName').value,$('aarSignRank').value,$('aarSignDesignation').value].filter(Boolean).join('\n');
+ $('dNoted').value=$('aarNotedBy').value;
+}
+function initAarInputs(){
+ addRepeat('aarReferences','reference');
+ addRepeat('aarParticipants','participant');
+ addRepeat('aarNarratives','narrative');
+ ['aarForName','aarForOffice','aarForAttention','aarThruName','aarThruOffice','aarSubject','aarMemoDate','aarMission','aarPlace','aarDateCovered','aarStartTime','aarEndTime','aarDateNotes','aarIssues','aarConcerns','aarRecommendations','aarAttachments','aarSignName','aarSignRank','aarSignDesignation','aarNotedBy'].forEach(id=>$(id).addEventListener('input',()=>{syncAarFields();renderAarPreview();}));
+ $('addReference').onclick=()=>addRepeat('aarReferences','reference');
+ $('addParticipant').onclick=()=>addRepeat('aarParticipants','participant');
+ $('addNarrative').onclick=()=>addRepeat('aarNarratives','narrative');
+}
+const oldRefreshAarMode=refreshAarMode;
+refreshAarMode=function(){
+ oldRefreshAarMode();
+ const isAar=$('dType').value==='After Activity Report (AAR)';
+ $('aarCompleteInputs').style.display=isAar?'block':'none';
+ document.querySelectorAll('.doc-form > .doc-section').forEach(el=>{el.style.display=isAar?'none':'';});
+ if(isAar){syncAarFields();renderAarPreview();}
+};
+initAarInputs();
+
+
+// Clear all AAR-specific controls without leaving stale repeatable entries.
+const originalClear=$('clearDoc').onclick;
+$('clearDoc').onclick=()=>{
+ ['aarForName','aarForOffice','aarForAttention','aarThruName','aarThruOffice','aarSubject','aarMemoDate','aarMission','aarPlace','aarDateCovered','aarStartTime','aarEndTime','aarDateNotes','aarIssues','aarConcerns','aarRecommendations','aarAttachments','aarNotedBy'].forEach(id=>$(id).value='');
+ $('aarSignName').value='ISRAELITO D BARRUN';$('aarSignRank').value='Jail Inspector';$('aarSignDesignation').value='Acting Warden';
+ ['aarReferences','aarParticipants','aarNarratives'].forEach(id=>$(id).innerHTML='');
+ addRepeat('aarReferences','reference');addRepeat('aarParticipants','participant');addRepeat('aarNarratives','narrative');
+ $('photoFiles').value='';uploadedPhotos.forEach(x=>URL.revokeObjectURL(x.url));uploadedPhotos=[];
+ $('photoList').innerHTML='';$('photoStart').value='';$('confirmedStart').value='';$('photoStatus').textContent='No photos selected.';
+ ['dDate','dRef','dTo','dThru','dSubject','dWhen','dWhere','dWhat','dWho','dDetails','dAction','dNoted','dApproved'].forEach(id=>$(id).value='');
+ $('dOffice').value='SIPOCOT DISTRICT JAIL';$('dFrom').value='JO1 Carl Benedict C. Dineros';renderAarPreview();
+};
+
 refreshAarMode();
 </script></body></html>
