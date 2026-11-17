@@ -33,7 +33,160 @@ textarea{width:100%;min-height:90px;padding:12px 13px;border:1px solid #d3dee7;b
 
 .doc-type-bar{max-width:520px;margin:12px 0 18px}.doc-workspace{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(230px,.85fr);gap:16px;align-items:start}.doc-form{min-width:0}.doc-section{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px;margin:0 0 13px;box-shadow:0 4px 14px rgba(9,31,51,.045)}.doc-section h3,.doc-preview h3{margin:0 0 10px;padding:10px 12px;border-radius:9px;background:linear-gradient(110deg,#0b263c,#145779);color:#fff;font-size:14px}.docgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.docgrid .wide{grid-column:1/-1}.docgrid textarea{width:100%;min-height:82px;padding:11px 12px;border:1px solid #d3dee7;border-radius:10px;font:14px Tahoma,Arial;resize:vertical}.doc-preview{position:sticky;top:12px;background:#f8fbfd;border:1px solid var(--line);border-radius:14px;padding:13px}.standards-note{margin-top:14px;padding:12px;border-left:4px solid var(--gold);background:#fff8e8;border-radius:8px;font-size:12px;line-height:1.5}.standards-note p{margin:6px 0}.doc-type-bar select{font-size:15px;font-weight:700;padding:13px}.doc-section label{font-size:11px;margin:8px 0 5px}.doc-section input,.doc-section textarea{font-family:Tahoma,Arial,sans-serif}.smallhint{line-height:1.5}
 @media(max-width:760px){.doc-workspace{grid-template-columns:1fr}.doc-preview{position:static;order:2}.docgrid{grid-template-columns:1fr}.docgrid .wide{grid-column:auto}.doc-section{padding:12px}.doc-section h3{font-size:13px}}
-</style><script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script></head><body>
+
+.photo-drop{border:2px dashed #9bb4c6;border-radius:12px;padding:14px;background:#f6fafc}
+.photo-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:10px;margin-top:12px}
+.photo-card{border:1px solid var(--line);border-radius:10px;padding:8px;background:#fff}
+.photo-card img{width:100%;height:105px;object-fit:cover;border-radius:7px}
+.photo-card input{font-size:11px;padding:7px;margin-top:5px}
+.preview-tools{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.preview-frame{background:#e8eef3;padding:12px;border-radius:10px;overflow:auto;max-height:850px}
+.paper{background:#fff;color:#111;width:210mm;min-height:297mm;margin:0 auto 12px;padding:25.4mm;box-shadow:0 2px 12px #0002;font:12pt Tahoma,Arial,sans-serif;line-height:1.25;white-space:normal}
+.paper h4{text-align:center;margin:0 0 4px;font-size:12pt}.paper .letterhead{text-align:center;line-height:1.15;margin-bottom:18px;font-size:10pt}
+.paper .doc-title{text-align:center;font-weight:bold;margin:16px 0}
+.paper p{margin:0 0 10px;white-space:pre-wrap}
+.paper .doc-photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.paper .doc-photo-grid img{width:100%;height:125px;object-fit:contain}
+.paper .photo-caption{text-align:center;font-size:9pt;margin-top:3px}
+@media print{body *{visibility:hidden!important}#printArea,#printArea *{visibility:visible!important}#printArea{position:absolute;left:0;top:0;width:100%}.paper{width:auto;min-height:0;margin:0;padding:20mm;box-shadow:none;page-break-after:always}.paper:last-child{page-break-after:auto}}
+@page{size:A4;margin:0}
+@media(max-width:760px){.paper{width:100%;min-height:0;padding:18px;font-size:11pt}.preview-frame{padding:5px}}
+</style><script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js">
+// Version 1.0: photo evidence, EXIF timestamps, live preview, print and DOCX output.
+let uploadedPhotos=[];
+const fmtDate=d=>{if(!d||isNaN(d.getTime()))return '';return d.toLocaleString('en-PH',{year:'numeric',month:'long',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:true})};
+function getDocData(){return {
+type:$('dType').value,date:$('dDate').value,office:$('dOffice').value,ref:$('dRef').value,to:$('dTo').value,from:$('dFrom').value,subject:$('dSubject').value,
+when:$('dWhen').value,where:$('dWhere').value,what:$('dWhat').value,who:$('dWho').value,details:$('dDetails').value,action:$('dAction').value,noted:$('dNoted').value,approved:$('dApproved').value,
+start:$('confirmedStart').value||$('photoStart').value
+};}
+function safeText(v){return esc(v||'').replace(/\n/g,'<br>')}
+function renderPreview(){
+ const d=getDocData(),p=$('paperPreview');
+ const lines=[['FOR',d.to],['FROM',d.from],['SUBJECT',d.subject],['DATE',d.date]];
+ let h=`<div class="letterhead">Republic of the Philippines<br>Department of the Interior and Local Government<br><b>BUREAU OF JAIL MANAGEMENT AND PENOLOGY</b><br><b>${safeText(d.office||'SIPOCOT DISTRICT JAIL')}</b><br>Awayan, Sipocot, Camarines Sur<br>“Changing Lives, Building a Safer Nation”</div><div class="doc-title">${safeText(d.type).toUpperCase()}</div>`;
+ lines.forEach(([k,v])=>{if(v)h+=`<p><b>${k}:</b> ${safeText(v)}</p>`});
+ const sections=[['1. REFERENCE / PURPOSE',d.what],['2. ACTIVITY / INCIDENT DETAILS',`When: ${d.when}\nWhere: ${d.where}\nWho: ${d.who}`],['3. NARRATIVE',d.details],['4. ACCOMPLISHMENTS / ACTIONS / RECOMMENDATIONS',d.action]];
+ sections.forEach(([k,v])=>{if(v)h+=`<p><b>${k}</b></p><p>${safeText(v)}</p>`});
+ if(d.start)h+=`<p><b>Suggested / confirmed activity start:</b> ${safeText(d.start)}</p>`;
+ if(uploadedPhotos.length){h+='<p><b>PHOTO DOCUMENTATION</b></p><div class="doc-photo-grid">'+uploadedPhotos.map(ph=>`<div><img src="${ph.url}"><div class="photo-caption">${safeText(ph.caption||ph.name)}${ph.date?'<br>'+safeText(fmtDate(ph.date)):''}</div></div>`).join('')+'</div>'}
+ if(d.noted)h+=`<p style="margin-top:28px"><b>NOTED BY:</b><br>${safeText(d.noted)}</p>`;
+ if(d.approved)h+=`<p style="margin-top:18px"><b>APPROVED BY:</b><br>${safeText(d.approved)}</p>`;
+ p.innerHTML=h;
+}
+async function loadPhotos(files){
+ uploadedPhotos=[];
+ for(const f of Array.from(files)){
+  if(!/^image\/(jpeg|png)$/.test(f.type))continue;
+  let date=null;
+  try{if(window.exifr){let meta=await exifr.parse(f,['DateTimeOriginal','CreateDate','ModifyDate']);let raw=meta?.DateTimeOriginal||meta?.CreateDate||meta?.ModifyDate;if(raw)date=raw instanceof Date?raw:new Date(raw);if(date&&isNaN(date.getTime()))date=null;}}catch(e){}
+  const url=URL.createObjectURL(f);
+  uploadedPhotos.push({file:f,url,name:f.name,date,caption:f.name});
+ }
+ uploadedPhotos.sort((a,b)=>(a.date?.getTime()??Infinity)-(b.date?.getTime()??Infinity));
+ const first=uploadedPhotos.find(x=>x.date);
+ $('photoStart').value=first?fmtDate(first.date):'No EXIF timestamp found — enter manually';
+ $('confirmedStart').value=first?fmtDate(first.date):'';
+ $('photoStatus').textContent=`${uploadedPhotos.length} photo(s) loaded. ${uploadedPhotos.filter(x=>x.date).length} with readable EXIF timestamp.`;
+ $('photoList').innerHTML=uploadedPhotos.map((ph,i)=>`<div class="photo-card"><img src="${ph.url}" alt="Photo ${i+1}"><div class="smallhint">#${i+1} • ${ph.date?esc(fmtDate(ph.date)):'No EXIF date'}</div><input aria-label="Photo caption" data-photo-caption="${i}" value="${esc(ph.caption)}" placeholder="Photo caption"></div>`).join('');
+ document.querySelectorAll('[data-photo-caption]').forEach(el=>el.addEventListener('input',e=>{uploadedPhotos[+e.target.dataset.photoCaption].caption=e.target.value;renderPreview()}));
+ renderPreview();
+}
+$('photoFiles').addEventListener('change',e=>loadPhotos(e.target.files));
+document.querySelectorAll('#documents input:not([type=file]),#documents textarea,#documents select').forEach(el=>el.addEventListener('input',renderPreview));
+$('refreshPreview').onclick=renderPreview;
+$('printDoc').onclick=()=>{renderPreview();window.print();};
+function dataUrlBytes(url){return fetch(url).then(r=>r.arrayBuffer()).then(b=>new Uint8Array(b));}
+$('generateDocx').onclick=async()=>{
+ const d=getDocData(),status=$('docStatus');status.textContent='Generating DOCX…';
+ try{
+  if(!window.docx)throw Error('Word document library did not load. Check internet connection and reload.');
+  const {Document,Packer,Paragraph,TextRun,AlignmentType,ImageRun,HeadingLevel}=docx;
+  const children=[];
+  const para=(text,bold=false,opts={})=>new Paragraph({children:[new TextRun({text:String(text||''),bold,font:'Tahoma',size:24})],spacing:{after:160},...opts});
+  children.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:'Republic of the Philippines',font:'Tahoma',size:20}),new TextRun({text:'\nDepartment of the Interior and Local Government',font:'Tahoma',size:20}),new TextRun({text:'\nBUREAU OF JAIL MANAGEMENT AND PENOLOGY',bold:true,font:'Tahoma',size:22}),new TextRun({text:'\n'+(d.office||'SIPOCOT DISTRICT JAIL'),bold:true,font:'Tahoma',size:22}),new TextRun({text:'\nAwayan, Sipocot, Camarines Sur',font:'Tahoma',size:18}),new TextRun({text:'\n“Changing Lives, Building a Safer Nation”',font:'Tahoma',size:18})],spacing:{after:300}}));
+  children.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:d.type.toUpperCase(),bold:true,font:'Tahoma',size:24})],spacing:{before:200,after:300}}));
+  [['FOR',d.to],['FROM',d.from],['SUBJECT',d.subject],['DATE',d.date]].forEach(([k,v])=>{if(v)children.push(para(k+': '+v))});
+  [['1. REFERENCE / PURPOSE',d.what],['2. ACTIVITY / INCIDENT DETAILS','When: '+d.when+'\nWhere: '+d.where+'\nWho: '+d.who],['3. NARRATIVE',d.details],['4. ACCOMPLISHMENTS / ACTIONS / RECOMMENDATIONS',d.action]].forEach(([k,v])=>{if(v){children.push(new Paragraph({children:[new TextRun({text:k,bold:true,font:'Tahoma',size:24})],spacing:{before:180,after:100}}));String(v).split('\n').forEach(line=>children.push(para(line)));}});
+  if(d.start)children.push(para('Suggested / confirmed activity start: '+d.start));
+  if(uploadedPhotos.length){children.push(new Paragraph({children:[new TextRun({text:'PHOTO DOCUMENTATION',bold:true,font:'Tahoma',size:24})],spacing:{before:250,after:150}}));
+   for(let i=0;i<uploadedPhotos.length;i++){let ph=uploadedPhotos[i];let bytes=await dataUrlBytes(ph.url);children.push(new Paragraph({children:[new ImageRun({data:bytes,transformation:{width:230,height:160},type:ph.file.type==='image/png'?'png':'jpg'})],alignment:AlignmentType.CENTER}));children.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:(ph.caption||ph.name)+(ph.date?' — '+fmtDate(ph.date):''),font:'Tahoma',size:18})],spacing:{after:180}}));}
+  }
+  if(d.noted)children.push(para('NOTED BY: '+d.noted,true));if(d.approved)children.push(para('APPROVED BY: '+d.approved,true));
+  const doc=new Document({sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:1440,right:1440,bottom:1440,left:1440}}},children}]});
+  const blob=await Packer.toBlob(doc);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(d.type.replace(/[^a-z0-9]+/gi,'_')+'_'+(d.date||new Date().toISOString().slice(0,10))+'.docx');a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);status.textContent='DOCX generated. Review against the current controlled BJMP template before official use.';
+ }catch(e){status.textContent='DOCX generation failed: '+e.message;alert(e.message);}
+};
+renderPreview();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js">
+// Version 1.0: photo evidence, EXIF timestamps, live preview, print and DOCX output.
+let uploadedPhotos=[];
+const fmtDate=d=>{if(!d||isNaN(d.getTime()))return '';return d.toLocaleString('en-PH',{year:'numeric',month:'long',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:true})};
+function getDocData(){return {
+type:$('dType').value,date:$('dDate').value,office:$('dOffice').value,ref:$('dRef').value,to:$('dTo').value,from:$('dFrom').value,subject:$('dSubject').value,
+when:$('dWhen').value,where:$('dWhere').value,what:$('dWhat').value,who:$('dWho').value,details:$('dDetails').value,action:$('dAction').value,noted:$('dNoted').value,approved:$('dApproved').value,
+start:$('confirmedStart').value||$('photoStart').value
+};}
+function safeText(v){return esc(v||'').replace(/\n/g,'<br>')}
+function renderPreview(){
+ const d=getDocData(),p=$('paperPreview');
+ const lines=[['FOR',d.to],['FROM',d.from],['SUBJECT',d.subject],['DATE',d.date]];
+ let h=`<div class="letterhead">Republic of the Philippines<br>Department of the Interior and Local Government<br><b>BUREAU OF JAIL MANAGEMENT AND PENOLOGY</b><br><b>${safeText(d.office||'SIPOCOT DISTRICT JAIL')}</b><br>Awayan, Sipocot, Camarines Sur<br>“Changing Lives, Building a Safer Nation”</div><div class="doc-title">${safeText(d.type).toUpperCase()}</div>`;
+ lines.forEach(([k,v])=>{if(v)h+=`<p><b>${k}:</b> ${safeText(v)}</p>`});
+ const sections=[['1. REFERENCE / PURPOSE',d.what],['2. ACTIVITY / INCIDENT DETAILS',`When: ${d.when}\nWhere: ${d.where}\nWho: ${d.who}`],['3. NARRATIVE',d.details],['4. ACCOMPLISHMENTS / ACTIONS / RECOMMENDATIONS',d.action]];
+ sections.forEach(([k,v])=>{if(v)h+=`<p><b>${k}</b></p><p>${safeText(v)}</p>`});
+ if(d.start)h+=`<p><b>Suggested / confirmed activity start:</b> ${safeText(d.start)}</p>`;
+ if(uploadedPhotos.length){h+='<p><b>PHOTO DOCUMENTATION</b></p><div class="doc-photo-grid">'+uploadedPhotos.map(ph=>`<div><img src="${ph.url}"><div class="photo-caption">${safeText(ph.caption||ph.name)}${ph.date?'<br>'+safeText(fmtDate(ph.date)):''}</div></div>`).join('')+'</div>'}
+ if(d.noted)h+=`<p style="margin-top:28px"><b>NOTED BY:</b><br>${safeText(d.noted)}</p>`;
+ if(d.approved)h+=`<p style="margin-top:18px"><b>APPROVED BY:</b><br>${safeText(d.approved)}</p>`;
+ p.innerHTML=h;
+}
+async function loadPhotos(files){
+ uploadedPhotos=[];
+ for(const f of Array.from(files)){
+  if(!/^image\/(jpeg|png)$/.test(f.type))continue;
+  let date=null;
+  try{if(window.exifr){let meta=await exifr.parse(f,['DateTimeOriginal','CreateDate','ModifyDate']);let raw=meta?.DateTimeOriginal||meta?.CreateDate||meta?.ModifyDate;if(raw)date=raw instanceof Date?raw:new Date(raw);if(date&&isNaN(date.getTime()))date=null;}}catch(e){}
+  const url=URL.createObjectURL(f);
+  uploadedPhotos.push({file:f,url,name:f.name,date,caption:f.name});
+ }
+ uploadedPhotos.sort((a,b)=>(a.date?.getTime()??Infinity)-(b.date?.getTime()??Infinity));
+ const first=uploadedPhotos.find(x=>x.date);
+ $('photoStart').value=first?fmtDate(first.date):'No EXIF timestamp found — enter manually';
+ $('confirmedStart').value=first?fmtDate(first.date):'';
+ $('photoStatus').textContent=`${uploadedPhotos.length} photo(s) loaded. ${uploadedPhotos.filter(x=>x.date).length} with readable EXIF timestamp.`;
+ $('photoList').innerHTML=uploadedPhotos.map((ph,i)=>`<div class="photo-card"><img src="${ph.url}" alt="Photo ${i+1}"><div class="smallhint">#${i+1} • ${ph.date?esc(fmtDate(ph.date)):'No EXIF date'}</div><input aria-label="Photo caption" data-photo-caption="${i}" value="${esc(ph.caption)}" placeholder="Photo caption"></div>`).join('');
+ document.querySelectorAll('[data-photo-caption]').forEach(el=>el.addEventListener('input',e=>{uploadedPhotos[+e.target.dataset.photoCaption].caption=e.target.value;renderPreview()}));
+ renderPreview();
+}
+$('photoFiles').addEventListener('change',e=>loadPhotos(e.target.files));
+document.querySelectorAll('#documents input:not([type=file]),#documents textarea,#documents select').forEach(el=>el.addEventListener('input',renderPreview));
+$('refreshPreview').onclick=renderPreview;
+$('printDoc').onclick=()=>{renderPreview();window.print();};
+function dataUrlBytes(url){return fetch(url).then(r=>r.arrayBuffer()).then(b=>new Uint8Array(b));}
+$('generateDocx').onclick=async()=>{
+ const d=getDocData(),status=$('docStatus');status.textContent='Generating DOCX…';
+ try{
+  if(!window.docx)throw Error('Word document library did not load. Check internet connection and reload.');
+  const {Document,Packer,Paragraph,TextRun,AlignmentType,ImageRun,HeadingLevel}=docx;
+  const children=[];
+  const para=(text,bold=false,opts={})=>new Paragraph({children:[new TextRun({text:String(text||''),bold,font:'Tahoma',size:24})],spacing:{after:160},...opts});
+  children.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:'Republic of the Philippines',font:'Tahoma',size:20}),new TextRun({text:'\nDepartment of the Interior and Local Government',font:'Tahoma',size:20}),new TextRun({text:'\nBUREAU OF JAIL MANAGEMENT AND PENOLOGY',bold:true,font:'Tahoma',size:22}),new TextRun({text:'\n'+(d.office||'SIPOCOT DISTRICT JAIL'),bold:true,font:'Tahoma',size:22}),new TextRun({text:'\nAwayan, Sipocot, Camarines Sur',font:'Tahoma',size:18}),new TextRun({text:'\n“Changing Lives, Building a Safer Nation”',font:'Tahoma',size:18})],spacing:{after:300}}));
+  children.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:d.type.toUpperCase(),bold:true,font:'Tahoma',size:24})],spacing:{before:200,after:300}}));
+  [['FOR',d.to],['FROM',d.from],['SUBJECT',d.subject],['DATE',d.date]].forEach(([k,v])=>{if(v)children.push(para(k+': '+v))});
+  [['1. REFERENCE / PURPOSE',d.what],['2. ACTIVITY / INCIDENT DETAILS','When: '+d.when+'\nWhere: '+d.where+'\nWho: '+d.who],['3. NARRATIVE',d.details],['4. ACCOMPLISHMENTS / ACTIONS / RECOMMENDATIONS',d.action]].forEach(([k,v])=>{if(v){children.push(new Paragraph({children:[new TextRun({text:k,bold:true,font:'Tahoma',size:24})],spacing:{before:180,after:100}}));String(v).split('\n').forEach(line=>children.push(para(line)));}});
+  if(d.start)children.push(para('Suggested / confirmed activity start: '+d.start));
+  if(uploadedPhotos.length){children.push(new Paragraph({children:[new TextRun({text:'PHOTO DOCUMENTATION',bold:true,font:'Tahoma',size:24})],spacing:{before:250,after:150}}));
+   for(let i=0;i<uploadedPhotos.length;i++){let ph=uploadedPhotos[i];let bytes=await dataUrlBytes(ph.url);children.push(new Paragraph({children:[new ImageRun({data:bytes,transformation:{width:230,height:160},type:ph.file.type==='image/png'?'png':'jpg'})],alignment:AlignmentType.CENTER}));children.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:(ph.caption||ph.name)+(ph.date?' — '+fmtDate(ph.date):''),font:'Tahoma',size:18})],spacing:{after:180}}));}
+  }
+  if(d.noted)children.push(para('NOTED BY: '+d.noted,true));if(d.approved)children.push(para('APPROVED BY: '+d.approved,true));
+  const doc=new Document({sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:1440,right:1440,bottom:1440,left:1440}}},children}]});
+  const blob=await Packer.toBlob(doc);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(d.type.replace(/[^a-z0-9]+/gi,'_')+'_'+(d.date||new Date().toISOString().slice(0,10))+'.docx');a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);status.textContent='DOCX generated. Review against the current controlled BJMP template before official use.';
+ }catch(e){status.textContent='DOCX generation failed: '+e.message;alert(e.message);}
+};
+renderPreview();
+</script></head><body>
 <header><div class="wrap">
 <div class="brandhead">
 <img class="appmark" src="assets/bjmp-tech-shield.svg" alt="BJMP Document Automation emblem">
@@ -78,9 +231,19 @@ textarea{width:100%;min-height:90px;padding:12px 13px;border:1px solid #d3dee7;b
 <div class="doc-section"><h3>4. Review and approval routing</h3><div class="docgrid">
 <div><label>Noted by</label><input id="dNoted" placeholder="Name and rank/title"></div><div><label>Approved by / Authorized signatory</label><input id="dApproved" placeholder="Authorized signatory"></div>
 </div><p class="hint">Ang signatory at routing ay dapat piliin ayon sa kasalukuyang delegation of authority at office hierarchy.</p></div>
+<div class="doc-section"><h3>5. Photo documentation</h3>
+<p class="smallhint">Upload activity photos. The system reads EXIF capture time when available, sorts photos from earliest to latest, and suggests the earliest valid timestamp as the activity start. Review all timestamps before release.</p>
+<div class="photo-drop"><label for="photoFiles">Upload multiple photos (JPG / PNG)</label><input id="photoFiles" type="file" accept="image/jpeg,image/png" multiple><div class="smallhint" id="photoStatus">No photos selected.</div></div>
+<div class="grid"><div><label>Suggested activity start (earliest photo)</label><input id="photoStart" readonly placeholder="Will appear after upload"></div><div><label>Confirmed activity start (editable)</label><input id="confirmedStart" placeholder="Review / correct start time"></div></div>
+<div id="photoList" class="photo-list"></div>
+</div>
 <div class="actions"><button class="primary" id="generateDocx">Generate Word document (.docx)</button><button class="secondary" id="clearDoc">Clear form</button></div>
 <p class="smallhint" id="docStatus">Draft generator. Verify the selected BJMP annex, current letterhead artwork, exact spacing, routing and signatory authority before official use.</p>
-</div><aside class="doc-preview"><h3>Document checklist</h3><p class="hint">Before generating or releasing:</p><ul class="hint"><li>Confirm correct document category and annex.</li><li>Use approved unit letterhead and official logo artwork.</li><li>Confirm current signatory and routing.</li><li>Review pagination, footer, mantra and document control number.</li><li>Obtain authorized review and approval.</li></ul><div class="standards-note"><b>Formatting profile</b><p>Tahoma 12 body text; A4 or Folio; 1-inch margins; single spacing with one vertical space after paragraphs, subject to applicable annex-specific layout.</p><p>Logo size and placement follow the applicable BJMP Brand Identity Manual and approved letterhead.</p></div></aside></div>
+</div><aside class="doc-preview"><h3>Live Print Preview</h3>
+<p class="hint">Preview updates as you edit. Check page layout and photos before printing or generating DOCX.</p>
+<div class="preview-tools"><button class="secondary" id="refreshPreview">Refresh Preview</button><button class="secondary" id="printDoc">Print / Save PDF</button></div>
+<div class="preview-frame"><div id="printArea"><div class="paper" id="paperPreview"></div></div></div>
+<div class="standards-note"><b>Document control reminder</b><p>Confirm the current controlled BJMP MC annex, approved letterhead, signatory authority, paper size and unit QMS procedure. This prototype is not an official approval or certification.</p></div></aside></div>
 </section>
 <section class="panel"><h2>Production security rules</h2><ul class="hint"><li>Unit registration requires verification and approval by an authorized platform administrator.</li><li>Each jail's users, documents, uploads and audit records must be isolated by unit.</li><li>Unit administrators can manage only their own jail profile and authorized personnel.</li><li>Central templates may be distributed system-wide, while unit-specific branding remains separate.</li><li>Real deployment requires an approved server, secure authentication, server-side permissions, encrypted storage and daily backups.</li></ul></section>
 </main><footer>Changing Lives, Building a Safer Nation • Prototype only — do not enter confidential PDL or operational data.</footer>
@@ -100,4 +263,71 @@ const docProfiles={
 function updateDocProfile(){const p=docProfiles[$('dType').value];if(!p)return;$('subjectLabel').textContent=p.s;$('sectionTwoTitle').textContent=p.two;$('sectionThreeTitle').textContent=p.three;$('whenLabel').textContent=p.w;$('whereLabel').textContent=p.v;$('whatLabel').textContent=p.what;$('whoLabel').textContent=p.who;$('detailsLabel').textContent=p.details;$('actionLabel').textContent=p.action;}
 $('dType').addEventListener('change',updateDocProfile);updateDocProfile();
 $('clearDoc').addEventListener('click',()=>{['dDate','dRef','dTo','dSubject','dWhen','dWhere','dWhat','dWho','dDetails','dAction','dNoted','dApproved'].forEach(id=>$(id).value='');$('dOffice').value='SIPOCOT DISTRICT JAIL';$('dFrom').value='JO1 Carl Benedict C. Dineros';});
+
+// Version 1.0: photo evidence, EXIF timestamps, live preview, print and DOCX output.
+let uploadedPhotos=[];
+const fmtDate=d=>{if(!d||isNaN(d.getTime()))return '';return d.toLocaleString('en-PH',{year:'numeric',month:'long',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:true})};
+function getDocData(){return {
+type:$('dType').value,date:$('dDate').value,office:$('dOffice').value,ref:$('dRef').value,to:$('dTo').value,from:$('dFrom').value,subject:$('dSubject').value,
+when:$('dWhen').value,where:$('dWhere').value,what:$('dWhat').value,who:$('dWho').value,details:$('dDetails').value,action:$('dAction').value,noted:$('dNoted').value,approved:$('dApproved').value,
+start:$('confirmedStart').value||$('photoStart').value
+};}
+function safeText(v){return esc(v||'').replace(/\n/g,'<br>')}
+function renderPreview(){
+ const d=getDocData(),p=$('paperPreview');
+ const lines=[['FOR',d.to],['FROM',d.from],['SUBJECT',d.subject],['DATE',d.date]];
+ let h=`<div class="letterhead">Republic of the Philippines<br>Department of the Interior and Local Government<br><b>BUREAU OF JAIL MANAGEMENT AND PENOLOGY</b><br><b>${safeText(d.office||'SIPOCOT DISTRICT JAIL')}</b><br>Awayan, Sipocot, Camarines Sur<br>“Changing Lives, Building a Safer Nation”</div><div class="doc-title">${safeText(d.type).toUpperCase()}</div>`;
+ lines.forEach(([k,v])=>{if(v)h+=`<p><b>${k}:</b> ${safeText(v)}</p>`});
+ const sections=[['1. REFERENCE / PURPOSE',d.what],['2. ACTIVITY / INCIDENT DETAILS',`When: ${d.when}\nWhere: ${d.where}\nWho: ${d.who}`],['3. NARRATIVE',d.details],['4. ACCOMPLISHMENTS / ACTIONS / RECOMMENDATIONS',d.action]];
+ sections.forEach(([k,v])=>{if(v)h+=`<p><b>${k}</b></p><p>${safeText(v)}</p>`});
+ if(d.start)h+=`<p><b>Suggested / confirmed activity start:</b> ${safeText(d.start)}</p>`;
+ if(uploadedPhotos.length){h+='<p><b>PHOTO DOCUMENTATION</b></p><div class="doc-photo-grid">'+uploadedPhotos.map(ph=>`<div><img src="${ph.url}"><div class="photo-caption">${safeText(ph.caption||ph.name)}${ph.date?'<br>'+safeText(fmtDate(ph.date)):''}</div></div>`).join('')+'</div>'}
+ if(d.noted)h+=`<p style="margin-top:28px"><b>NOTED BY:</b><br>${safeText(d.noted)}</p>`;
+ if(d.approved)h+=`<p style="margin-top:18px"><b>APPROVED BY:</b><br>${safeText(d.approved)}</p>`;
+ p.innerHTML=h;
+}
+async function loadPhotos(files){
+ uploadedPhotos=[];
+ for(const f of Array.from(files)){
+  if(!/^image\/(jpeg|png)$/.test(f.type))continue;
+  let date=null;
+  try{if(window.exifr){let meta=await exifr.parse(f,['DateTimeOriginal','CreateDate','ModifyDate']);let raw=meta?.DateTimeOriginal||meta?.CreateDate||meta?.ModifyDate;if(raw)date=raw instanceof Date?raw:new Date(raw);if(date&&isNaN(date.getTime()))date=null;}}catch(e){}
+  const url=URL.createObjectURL(f);
+  uploadedPhotos.push({file:f,url,name:f.name,date,caption:f.name});
+ }
+ uploadedPhotos.sort((a,b)=>(a.date?.getTime()??Infinity)-(b.date?.getTime()??Infinity));
+ const first=uploadedPhotos.find(x=>x.date);
+ $('photoStart').value=first?fmtDate(first.date):'No EXIF timestamp found — enter manually';
+ $('confirmedStart').value=first?fmtDate(first.date):'';
+ $('photoStatus').textContent=`${uploadedPhotos.length} photo(s) loaded. ${uploadedPhotos.filter(x=>x.date).length} with readable EXIF timestamp.`;
+ $('photoList').innerHTML=uploadedPhotos.map((ph,i)=>`<div class="photo-card"><img src="${ph.url}" alt="Photo ${i+1}"><div class="smallhint">#${i+1} • ${ph.date?esc(fmtDate(ph.date)):'No EXIF date'}</div><input aria-label="Photo caption" data-photo-caption="${i}" value="${esc(ph.caption)}" placeholder="Photo caption"></div>`).join('');
+ document.querySelectorAll('[data-photo-caption]').forEach(el=>el.addEventListener('input',e=>{uploadedPhotos[+e.target.dataset.photoCaption].caption=e.target.value;renderPreview()}));
+ renderPreview();
+}
+$('photoFiles').addEventListener('change',e=>loadPhotos(e.target.files));
+document.querySelectorAll('#documents input:not([type=file]),#documents textarea,#documents select').forEach(el=>el.addEventListener('input',renderPreview));
+$('refreshPreview').onclick=renderPreview;
+$('printDoc').onclick=()=>{renderPreview();window.print();};
+function dataUrlBytes(url){return fetch(url).then(r=>r.arrayBuffer()).then(b=>new Uint8Array(b));}
+$('generateDocx').onclick=async()=>{
+ const d=getDocData(),status=$('docStatus');status.textContent='Generating DOCX…';
+ try{
+  if(!window.docx)throw Error('Word document library did not load. Check internet connection and reload.');
+  const {Document,Packer,Paragraph,TextRun,AlignmentType,ImageRun,HeadingLevel}=docx;
+  const children=[];
+  const para=(text,bold=false,opts={})=>new Paragraph({children:[new TextRun({text:String(text||''),bold,font:'Tahoma',size:24})],spacing:{after:160},...opts});
+  children.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:'Republic of the Philippines',font:'Tahoma',size:20}),new TextRun({text:'\nDepartment of the Interior and Local Government',font:'Tahoma',size:20}),new TextRun({text:'\nBUREAU OF JAIL MANAGEMENT AND PENOLOGY',bold:true,font:'Tahoma',size:22}),new TextRun({text:'\n'+(d.office||'SIPOCOT DISTRICT JAIL'),bold:true,font:'Tahoma',size:22}),new TextRun({text:'\nAwayan, Sipocot, Camarines Sur',font:'Tahoma',size:18}),new TextRun({text:'\n“Changing Lives, Building a Safer Nation”',font:'Tahoma',size:18})],spacing:{after:300}}));
+  children.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:d.type.toUpperCase(),bold:true,font:'Tahoma',size:24})],spacing:{before:200,after:300}}));
+  [['FOR',d.to],['FROM',d.from],['SUBJECT',d.subject],['DATE',d.date]].forEach(([k,v])=>{if(v)children.push(para(k+': '+v))});
+  [['1. REFERENCE / PURPOSE',d.what],['2. ACTIVITY / INCIDENT DETAILS','When: '+d.when+'\nWhere: '+d.where+'\nWho: '+d.who],['3. NARRATIVE',d.details],['4. ACCOMPLISHMENTS / ACTIONS / RECOMMENDATIONS',d.action]].forEach(([k,v])=>{if(v){children.push(new Paragraph({children:[new TextRun({text:k,bold:true,font:'Tahoma',size:24})],spacing:{before:180,after:100}}));String(v).split('\n').forEach(line=>children.push(para(line)));}});
+  if(d.start)children.push(para('Suggested / confirmed activity start: '+d.start));
+  if(uploadedPhotos.length){children.push(new Paragraph({children:[new TextRun({text:'PHOTO DOCUMENTATION',bold:true,font:'Tahoma',size:24})],spacing:{before:250,after:150}}));
+   for(let i=0;i<uploadedPhotos.length;i++){let ph=uploadedPhotos[i];let bytes=await dataUrlBytes(ph.url);children.push(new Paragraph({children:[new ImageRun({data:bytes,transformation:{width:230,height:160},type:ph.file.type==='image/png'?'png':'jpg'})],alignment:AlignmentType.CENTER}));children.push(new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:(ph.caption||ph.name)+(ph.date?' — '+fmtDate(ph.date):''),font:'Tahoma',size:18})],spacing:{after:180}}));}
+  }
+  if(d.noted)children.push(para('NOTED BY: '+d.noted,true));if(d.approved)children.push(para('APPROVED BY: '+d.approved,true));
+  const doc=new Document({sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:1440,right:1440,bottom:1440,left:1440}}},children}]});
+  const blob=await Packer.toBlob(doc);const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=(d.type.replace(/[^a-z0-9]+/gi,'_')+'_'+(d.date||new Date().toISOString().slice(0,10))+'.docx');a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);status.textContent='DOCX generated. Review against the current controlled BJMP template before official use.';
+ }catch(e){status.textContent='DOCX generation failed: '+e.message;alert(e.message);}
+};
+renderPreview();
 </script></body></html>
