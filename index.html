@@ -341,4 +341,293 @@ $('clearDoc').onclick=()=>{
 };
 
 refreshAarMode();
+
+/* BJMP AAR FIX PATCH
+   Paste this code at the VERY END of the existing main <script>,
+   immediately BEFORE the closing script tag.
+   It fixes AAR data mapping, preview, references, routing, signatory,
+   and uses the same AAR content in the generated DOCX.
+*/
+(function () {
+  const byId = id => document.getElementById(id);
+  const val = id => (byId(id)?.value || "").trim();
+  const escHtml = value => String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
+  }[ch]));
+  const lines = value => escHtml(value).replace(/\r?\n/g, "<br>");
+  const isAAR = () => byId("dType")?.value === "After Activity Report (AAR)";
+  const isRegional = () => byId("aarLayout")?.value === "regional2025";
+
+  function collectAAR() {
+    const refs = [...byId("aarReferences").querySelectorAll(".repeat-row")].map(row => {
+      const get = s => (row.querySelector(s)?.value || "").trim();
+      return { type:get(".r-type"), no:get(".r-no"), subject:get(".r-subject"), date:get(".r-date") };
+    }).filter(r => Object.values(r).some(Boolean));
+
+    const participants = [...byId("aarParticipants").querySelectorAll(".repeat-row")].map(row => {
+      const get = s => (row.querySelector(s)?.value || "").trim();
+      return { rank:get(".p-rank"), name:get(".p-name"), designation:get(".p-designation"), office:get(".p-office") };
+    }).filter(p => Object.values(p).some(Boolean));
+
+    const narratives = [...byId("aarNarratives").querySelectorAll(".repeat-row")].map(row =>
+      (row.querySelector(".n-text")?.value || "").trim()
+    ).filter(Boolean);
+
+    return {
+      forName:val("aarForName"), forOffice:val("aarForOffice"), forAttention:val("aarForAttention"),
+      thruName:val("aarThruName"), thruOffice:val("aarThruOffice"),
+      subject:val("aarSubject"), memoDate:val("aarMemoDate"),
+      references:refs, mission:val("aarMission"), place:val("aarPlace"),
+      activityDate:val("aarDateCovered"), startTime:val("aarStartTime"),
+      endTime:val("aarEndTime"), dateNotes:val("aarDateNotes"),
+      participants, narratives, issues:val("aarIssues"), concerns:val("aarConcerns"),
+      recommendations:val("aarRecommendations"), attachments:val("aarAttachments"),
+      signName:val("aarSignName"), signRank:val("aarSignRank"),
+      signDesignation:val("aarSignDesignation"), notedBy:val("aarNotedBy"),
+      office:val("dOffice") || "SIPOCOT DISTRICT JAIL"
+    };
+  }
+
+  function addTextBlock(label, value) {
+    if (!value) return "";
+    return `<p class="section-line"><b>${escHtml(label)}</b><br>${lines(value)}</p>`;
+  }
+
+  // Replace the preview renderer so it uses the dedicated AAR fields directly.
+  renderAarPreview = function () {
+    if (!isAAR()) return;
+    const d = collectAAR();
+    const paper = byId("paperPreview");
+    const routing = [
+      ["FOR", [d.forName, d.forOffice, d.forAttention].filter(Boolean).join("\n")],
+      ...(isRegional() ? [["THRU", [d.thruName, d.thruOffice].filter(Boolean).join("\n")]] : []),
+      ["SUBJECT", d.subject],
+      ["DATE", d.memoDate]
+    ];
+    const referenceText = d.references.map((r, i) =>
+      `${String.fromCharCode(97 + i)}. ${[r.type, r.no, r.subject, r.date].filter(Boolean).join(" — ")}`
+    ).join("\n");
+    const participantText = d.participants.map((p, i) =>
+      `${i + 1}. ${[p.rank, p.name, p.designation, p.office].filter(Boolean).join(" ")}`
+    ).join("\n");
+    const dateText = [d.activityDate, d.startTime && `Start: ${d.startTime}`,
+      d.endTime && `End: ${d.endTime}`, d.dateNotes].filter(Boolean).join("\n");
+    const narrativeText = d.narratives.map((n, i) =>
+      `${String.fromCharCode(97 + i)}. ${n}`
+    ).join("\n");
+    const issuesText = [
+      d.issues && `Issues:\n${d.issues}`,
+      d.concerns && `Concerns:\n${d.concerns}`,
+      d.recommendations && `Recommendations:\n${d.recommendations}`,
+      d.attachments && `Supporting documentation:\n${d.attachments}`
+    ].filter(Boolean).join("\n\n");
+
+    let html = `
+      <div class="logo-strip">
+        <img src="assets/bjmp-seal.jpeg" alt="BJMP seal" onerror="this.style.display='none'">
+        <img src="assets/sipocot-unit-mark.png" alt="Sipocot District Jail logo" onerror="this.style.display='none'">
+      </div>
+      <div class="letterhead">
+        Republic of the Philippines<br>
+        Department of the Interior and Local Government<br>
+        <b>BUREAU OF JAIL MANAGEMENT AND PENOLOGY</b><br>
+        ${isRegional() ? "REGIONAL OFFICE V<br>" : ""}
+        <b>${escHtml(d.office)}</b><br>
+        Awayan, Sipocot, Camarines Sur<br>
+        0930 335 9659 | r5.sipocotdi@bjmp.gov.ph<br>
+        “Changing Lives, Building a Safer Nation”
+      </div>
+      <div class="doc-title">MEMORANDUM</div>
+      <div class="routing">
+        ${routing.filter(x => x[1]).map(([k,v]) =>
+          `<div class="routing-row"><b>${k}</b><div>: ${lines(v)}</div></div>`
+        ).join("")}
+      </div>
+      ${addTextBlock("1. REFERENCE/S", referenceText)}
+      ${addTextBlock("2. MISSION/PURPOSE", d.mission)}
+      ${addTextBlock("3. PLACE/S COVERED", d.place)}
+      ${addTextBlock("4. DATE COVERED", dateText)}
+      ${addTextBlock("5. PARTICIPANT/S", participantText)}
+      ${addTextBlock("6. NARRATIVE", narrativeText)}
+      ${addTextBlock("7. ISSUES/CONCERNS/RECOMMENDATIONS", issuesText)}
+      <div class="signature">
+        ${escHtml(d.signName)}<br>
+        ${escHtml(d.signRank)}<br>
+        ${escHtml(d.signDesignation)}
+      </div>
+      ${d.notedBy ? `<p style="margin-top:24px"><b>NOTED BY:</b><br>${lines(d.notedBy)}</p>` : ""}
+    `;
+
+    if (uploadedPhotos.length) {
+      html += `<p style="margin-top:20px"><b>PHOTO DOCUMENTATION</b></p><div class="doc-photo-grid">${
+        uploadedPhotos.map(ph => `<div><img src="${ph.url}" alt="Activity photo"><div class="photo-caption">${escHtml(ph.caption || ph.name)}${ph.date ? "<br>" + escHtml(fmtDate(ph.date)) : ""}</div></div>`).join("")
+      }</div>`;
+    }
+    paper.innerHTML = html;
+  };
+
+  // Keep legacy fields synchronized for compatibility with the other app functions.
+  const oldSync = window.syncAarFields;
+  syncAarFields = function () {
+    if (!isAAR()) return;
+    const d = collectAAR();
+    byId("dTo").value = [d.forName, d.forOffice, d.forAttention].filter(Boolean).join("\n");
+    byId("dThru").value = [d.thruName, d.thruOffice].filter(Boolean).join("\n");
+    byId("dSubject").value = d.subject;
+    byId("dDate").value = d.memoDate;
+    byId("dRef").value = d.references.map((r,i) =>
+      `${String.fromCharCode(97+i)}. ${[r.type,r.no,r.subject,r.date].filter(Boolean).join(" — ")}`
+    ).join("\n");
+    byId("dWhat").value = d.mission;
+    byId("dWhere").value = d.place;
+    byId("dWhen").value = [d.activityDate, d.startTime, d.endTime, d.dateNotes].filter(Boolean).join(" | ");
+    byId("dWho").value = d.participants.map((p,i) =>
+      `${i+1}. ${[p.rank,p.name,p.designation,p.office].filter(Boolean).join(" ")}`
+    ).join("\n");
+    byId("dDetails").value = d.narratives.map((n,i) => `${String.fromCharCode(97+i)}. ${n}`).join("\n");
+    byId("dAction").value = [
+      d.issues && `Issues: ${d.issues}`, d.concerns && `Concerns: ${d.concerns}`,
+      d.recommendations && `Recommendations: ${d.recommendations}`,
+      d.attachments && `Supporting documentation: ${d.attachments}`
+    ].filter(Boolean).join("\n\n");
+    byId("dApproved").value = [d.signName,d.signRank,d.signDesignation].filter(Boolean).join("\n");
+    byId("dNoted").value = d.notedBy;
+  };
+
+  // DOCX generation for AAR: consumes the same dedicated fields as the preview.
+  const oldGenerate = byId("generateDocx").onclick;
+  byId("generateDocx").onclick = async function () {
+    if (!isAAR()) {
+      if (typeof oldGenerate === "function") return oldGenerate.call(this);
+      return;
+    }
+    const status = byId("docStatus");
+    status.textContent = "Generating AAR Word document…";
+    try {
+      const lib = window.docx;
+      if (!lib) throw new Error("DOCX library not loaded. Check internet connection and reload.");
+      const { Document, Packer, Paragraph, TextRun, ImageRun, AlignmentType } = lib;
+      const d = collectAAR(), children = [];
+      const center = AlignmentType.CENTER, left = AlignmentType.LEFT, justified = AlignmentType.JUSTIFIED;
+      const run = (text, bold=false, size=24) => new TextRun({text:String(text ?? ""), bold, font:"Tahoma", size});
+      const para = (text, opts={}) => new Paragraph({
+        alignment:opts.alignment || left,
+        children:[run(text, !!opts.bold, opts.size || 24)],
+        spacing:{before:opts.before || 0, after:opts.after ?? 120, line:300}
+      });
+      const section = (title, body) => {
+        children.push(new Paragraph({alignment:justified, children:[run(title, true), ...(body ? [run("\n"+body)] : [])], spacing:{after:180,line:300}}));
+      };
+
+      // Logos are optional; failed paths must not prevent document generation.
+      for (const path of ["assets/bjmp-seal.jpeg", "assets/sipocot-unit-mark.png"]) {
+        try {
+          const response = await fetch(path);
+          if (!response.ok) continue;
+          const bytes = new Uint8Array(await response.arrayBuffer());
+          children.push(new Paragraph({alignment:center, children:[
+            new ImageRun({data:bytes, transformation:{width:58,height:58}})
+          ], spacing:{after:80}}));
+        } catch (_) {}
+      }
+
+      children.push(new Paragraph({alignment:center, children:[
+        run("Republic of the Philippines\nDepartment of the Interior and Local Government\n",false,20),
+        run("BUREAU OF JAIL MANAGEMENT AND PENOLOGY\n",true,22),
+        ...(isRegional() ? [run("REGIONAL OFFICE V\n",true,20)] : []),
+        run(d.office+"\nAwayan, Sipocot, Camarines Sur\n0930 335 9659 | r5.sipocotdi@bjmp.gov.ph\n“Changing Lives, Building a Safer Nation”",false,18)
+      ], spacing:{after:260,line:240}}));
+
+      children.push(para("MEMORANDUM",{bold:true,after:220}));
+      const routing = [
+        ["FOR", [d.forName,d.forOffice,d.forAttention].filter(Boolean).join("\n")],
+        ...(isRegional() ? [["THRU",[d.thruName,d.thruOffice].filter(Boolean).join("\n")]] : []),
+        ["SUBJECT",d.subject],["DATE",d.memoDate]
+      ];
+      routing.filter(x=>x[1]).forEach(([k,v]) => children.push(new Paragraph({
+        children:[run(k+"\t: ",true),run(v)],
+        spacing:{after:120,line:300}
+      })));
+
+      const refs = d.references.map((r,i)=>`${String.fromCharCode(97+i)}. ${[r.type,r.no,r.subject,r.date].filter(Boolean).join(" — ")}`).join("\n");
+      const participants = d.participants.map((p,i)=>`${i+1}. ${[p.rank,p.name,p.designation,p.office].filter(Boolean).join(" ")}`).join("\n");
+      const dateCovered = [d.activityDate,d.startTime&&`Start: ${d.startTime}`,d.endTime&&`End: ${d.endTime}`,d.dateNotes].filter(Boolean).join("\n");
+      const narrative = d.narratives.map((n,i)=>`${String.fromCharCode(97+i)}. ${n}`).join("\n");
+      const issues = [
+        d.issues&&`Issues:\n${d.issues}`,d.concerns&&`Concerns:\n${d.concerns}`,
+        d.recommendations&&`Recommendations:\n${d.recommendations}`,
+        d.attachments&&`Supporting documentation:\n${d.attachments}`
+      ].filter(Boolean).join("\n\n");
+
+      section("1. REFERENCE/S",refs);
+      section("2. MISSION/PURPOSE",d.mission);
+      section("3. PLACE/S COVERED",d.place);
+      section("4. DATE COVERED",dateCovered);
+      section("5. PARTICIPANT/S",participants);
+      section("6. NARRATIVE",narrative);
+      section("7. ISSUES/CONCERNS/RECOMMENDATIONS",issues);
+
+      children.push(para(d.signName,{bold:true,before:360,after:40}));
+      if (d.signRank) children.push(para(d.signRank,{after:40}));
+      if (d.signDesignation) children.push(para(d.signDesignation,{after:160}));
+      if (d.notedBy) children.push(para("NOTED BY:\n"+d.notedBy,{before:180}));
+
+      if (uploadedPhotos.length) {
+        children.push(para("PHOTO DOCUMENTATION",{bold:true,before:240}));
+        for (const ph of uploadedPhotos) {
+          const response = await fetch(ph.url);
+          const bytes = new Uint8Array(await response.arrayBuffer());
+          children.push(new Paragraph({alignment:center,children:[
+            new ImageRun({data:bytes,transformation:{width:300,height:205}})
+          ],spacing:{after:50}}));
+          children.push(new Paragraph({alignment:center,children:[
+            run((ph.caption||ph.name)+(ph.date?" — "+fmtDate(ph.date):""),false,18)
+          ],spacing:{after:180}}));
+        }
+      }
+
+      const doc = new Document({sections:[{properties:{page:{
+        size:{width:11906,height:16838},
+        margin:{top:1440,right:1440,bottom:1440,left:1440}
+      }},children}]});
+      const blob = await Packer.toBlob(doc);
+      const url = URL.createObjectURL(blob), a = document.createElement("a");
+      a.href=url; a.download="AAR_Sipocot_"+(d.memoDate||new Date().toISOString().slice(0,10))+".docx";
+      a.click(); setTimeout(()=>URL.revokeObjectURL(url),5000);
+      status.textContent="AAR DOCX generated. Review the controlled BJMP template and signatory authority before official use.";
+    } catch (error) {
+      status.textContent="DOCX generation failed: "+error.message;
+      alert(error.message);
+    }
+  };
+
+  // Improve A4 preview scaling on narrow phone screens without shrinking the page content.
+  const style = document.createElement("style");
+  style.textContent = `
+    .doc-preview{min-width:0}
+    .preview-frame{min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    .paper{width:210mm;min-height:297mm;max-width:none;padding:25.4mm;font-size:12pt;line-height:1.25}
+    .paper .routing-row{grid-template-columns:70px minmax(0,1fr)}
+    .paper .routing-row>div{overflow-wrap:anywhere}
+    .doc-preview{min-width:0;width:100%}
+    .preview-frame{min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+    @media(max-width:760px){
+      .doc-workspace{grid-template-columns:minmax(0,1fr)}
+      .doc-preview{position:static;order:2}
+      .preview-frame{padding:6px}
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Re-render on all dedicated AAR input changes.
+  document.querySelectorAll("#aarCompleteInputs input, #aarCompleteInputs textarea").forEach(el => {
+    el.addEventListener("input", () => { syncAarFields(); renderAarPreview(); });
+    el.addEventListener("change", () => { syncAarFields(); renderAarPreview(); });
+  });
+  document.querySelectorAll("#aarCompleteInputs .repeat-row input, #aarCompleteInputs .repeat-row textarea").forEach(el => {
+    el.addEventListener("input", () => { syncAarFields(); renderAarPreview(); });
+  });
+  if (isAAR()) { syncAarFields(); renderAarPreview(); }
+})();
+
 </script></body></html>
