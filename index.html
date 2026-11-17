@@ -30,6 +30,9 @@ footer{text-align:center;color:var(--muted);font-size:11px;padding:18px}
 textarea{width:100%;min-height:90px;padding:12px 13px;border:1px solid #d3dee7;border-radius:10px;font:14px "Segoe UI",Tahoma,Arial;background:#fbfdff;color:var(--ink);resize:vertical}
 .smallhint{font-size:11px;color:var(--muted);line-height:1.5}
 @media(max-width:560px){.docgrid{grid-template-columns:1fr}.docgrid .wide{grid-column:auto}}
+
+.doc-type-bar{max-width:520px;margin:12px 0 18px}.doc-workspace{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(230px,.85fr);gap:16px;align-items:start}.doc-form{min-width:0}.doc-section{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px;margin:0 0 13px;box-shadow:0 4px 14px rgba(9,31,51,.045)}.doc-section h3,.doc-preview h3{margin:0 0 10px;padding:10px 12px;border-radius:9px;background:linear-gradient(110deg,#0b263c,#145779);color:#fff;font-size:14px}.docgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.docgrid .wide{grid-column:1/-1}.docgrid textarea{width:100%;min-height:82px;padding:11px 12px;border:1px solid #d3dee7;border-radius:10px;font:14px Tahoma,Arial;resize:vertical}.doc-preview{position:sticky;top:12px;background:#f8fbfd;border:1px solid var(--line);border-radius:14px;padding:13px}.standards-note{margin-top:14px;padding:12px;border-left:4px solid var(--gold);background:#fff8e8;border-radius:8px;font-size:12px;line-height:1.5}.standards-note p{margin:6px 0}.doc-type-bar select{font-size:15px;font-weight:700;padding:13px}.doc-section label{font-size:11px;margin:8px 0 5px}.doc-section input,.doc-section textarea{font-family:Tahoma,Arial,sans-serif}.smallhint{line-height:1.5}
+@media(max-width:760px){.doc-workspace{grid-template-columns:1fr}.doc-preview{position:static;order:2}.docgrid{grid-template-columns:1fr}.docgrid .wide{grid-column:auto}.doc-section{padding:12px}.doc-section h3{font-size:13px}}
 </style><script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script></head><body>
 <header><div class="wrap">
 <div class="brandhead">
@@ -54,195 +57,47 @@ textarea{width:100%;min-height:90px;padding:12px 13px;border:1px solid #d3dee7;b
 <section class="panel tab hidden" id="register"><h2>Register another BJMP jail</h2><p class="hint">For the future onboarding workflow. Registration must be verified by the platform administrator before the unit receives access.</p><div class="grid"><div><label>Official jail / unit name *</label><input id="nName" placeholder="e.g. Example District Jail"></div><div><label>Jail number / unit identifier *</label><input id="nNumber" placeholder="Official identifier"></div><div><label>Region *</label><select id="nRegion"><option value="">Select region</option><option>NCR</option><option>CAR</option><option>Region I</option><option>Region II</option><option>Region III</option><option>Region IV-A</option><option>Region IV-B</option><option>Region V</option><option>Region VI</option><option>Region VII</option><option>Region VIII</option><option>Region IX</option><option>Region X</option><option>Region XI</option><option>Region XII</option><option>Region XIII</option><option>BARMM</option></select></div><div><label>Contact number *</label><input id="nPhone" placeholder="Official contact number"></div><div><label>Official email</label><input id="nEmail" type="email" placeholder="Official unit email"></div><div><label>Address</label><input id="nAddress" placeholder="City / municipality, province"></div></div><div class="logos" style="margin-top:12px"><div class="logoBox"><b>Regional logo *</b><p class="hint">PNG or JPG</p><input type="file" id="nRegionLogo" accept="image/png,image/jpeg"></div><div class="logoBox"><b>Jail / Unit logo *</b><p class="hint">PNG or JPG</p><input type="file" id="nUnitLogo" accept="image/png,image/jpeg"></div></div><div class="actions"><button class="primary" id="submitUnit">Save sample registration</button></div><p class="hint">This saves a local draft only. It does not create a live account, verify the jail, or connect to a central server.</p></section>
 <section class="panel tab hidden" id="directory"><h2>Participating unit directory</h2><div id="unitTable"></div><div class="actions"><button class="secondary" id="exportData">Export unit profiles (JSON)</button><button class="secondary" id="importButton">Import profiles (JSON)</button><input class="hidden" id="importFile" type="file" accept="application/json"></div></section>
 <section class="panel" id="documents">
-<h2>BJMP National Correspondence Engine — Version 0.8</h2>
-<p class="hint">Templates are mapped to BJMP Communications Policy (BJMP-CDS-MC-133), Annexes B–E, H, H1, I2, J, K and M. Output remains a draft for authorized review; use the latest controlling issuance if amended.</p>
-<div class="docgrid">
- <div><label>Document type</label><select id="dType">
- <option value="AAR">After Activity Report (AAR) — Annex D</option><option value="MEMO">Memorandum — General Purposes — Annex B</option><option value="REQUEST">Memorandum — Requests — Annex C</option><option value="LETTER">Formal/Business Letter — Annex E</option><option value="SPOT">Spot Report — Annex H</option><option value="PROGRESS">Progress Report — Annex H1</option><option value="MINUTES">Minutes of the Meeting — Annex K</option><option value="NOTICE">Notice of Meeting — Annex J</option><option value="EVENT">Event Profile Sheet — Annex M</option><option value="ROUTING">Routing Slip — Jail Units — Annex I2</option><option value="CUSTOM">Other / Common Jail Issuance — Annex N (review required)</option>
- </select></div>
- <div><label>Document date</label><input id="dDate" type="date"></div>
- <div><label>Office / Unit</label><input id="dOffice" value="SIPOCOT DISTRICT JAIL"></div>
- <div><label>Document reference no. (optional)</label><input id="dRef" placeholder="e.g. SDJ-2026-001"></div>
- <div><label>To / Recipient</label><input id="dTo" placeholder="Name, rank/title, office"></div>
- <div><label>From / Prepared by</label><input id="dFrom" value="JO1 Carl Benedict C. Dineros"></div>
- <div class="wide"><label>Subject / Title</label><input id="dSubject" placeholder="Enter document subject"></div>
- <div><label>When / Date and time</label><input id="dWhen" placeholder="e.g. 9:00 AM, 17 November 2026"></div>
- <div><label>Where / Venue</label><input id="dWhere" placeholder="Location / venue"></div>
- <div class="wide"><label>What / Purpose or activity</label><textarea id="dWhat" placeholder="Describe the activity, purpose, or incident."></textarea></div>
- <div class="wide"><label>Who / Participants or persons involved</label><textarea id="dWho" placeholder="List names, ranks, offices, and roles."></textarea></div>
- <div class="wide"><label>Details / Narrative</label><textarea id="dDetails" placeholder="Write the chronological narrative or main body of the document."></textarea></div>
- <div class="wide"><label>Action taken / Agreements / Recommendations</label><textarea id="dAction" placeholder="List actions taken, agreements, recommendations, or next steps."></textarea></div>
- <div><label>Noted by</label><input id="dNoted" placeholder="Name and rank/title"></div>
- <div><label>Approved by / Signatory</label><input id="dApproved" placeholder="Authorized signatory"></div>
- <div><label>THRU (if required)</label><input id="dThru" placeholder="Name, rank/title, office"></div>
- <div><label>Salutation / Greeting</label><input id="dSalutation" placeholder="Dear ...:"></div>
- <div><label>Complimentary close</label><input id="dClose" value="Very truly yours,"></div>
- <div><label>Reference/s</label><textarea id="dReferences" placeholder="List references, issuances, or related documents."></textarea></div>
- <div><label>Mission / Purpose</label><textarea id="dMission" placeholder="AAR: mission or purpose of the activity."></textarea></div>
- <div><label>Places covered</label><input id="dPlaces" placeholder="Place/s covered"></div>
- <div><label>Date covered</label><input id="dCovered" placeholder="Date covered"></div>
- <div><label>Issues / Concerns</label><textarea id="dIssues" placeholder="Issues or concerns identified."></textarea></div>
- <div><label>Recommendations</label><textarea id="dRecommendations" placeholder="Recommendations for action."></textarea></div>
- <div><label>Background / Justification</label><textarea id="dBackground" placeholder="For Annex C request memoranda."></textarea></div>
- <div><label>Action requested</label><textarea id="dRequested" placeholder="Specific action requested / decision sought."></textarea></div>
- <div><label>Decision / Remarks</label><textarea id="dDecision" placeholder="For authorized decision and remarks."></textarea></div>
- <div><label>Meeting agenda / Topics</label><textarea id="dAgenda" placeholder="Agenda items / topics discussed."></textarea></div>
- <div><label>Decisions / Agreements</label><textarea id="dAgreements" placeholder="Decisions and agreements reached."></textarea></div>
- <div><label>Next meeting / Follow-up</label><input id="dNext" placeholder="Date, time, venue or follow-up"></div>
- <div><label>Meeting presider</label><input id="dPresider" placeholder="Name and title"></div>
- <div><label>Recipients / Distribution</label><textarea id="dDistribution" placeholder="Distribution list, in order of hierarchy"></textarea></div>
-</div>
+<h2>Document Center</h2>
+<p class="hint">Pumili ng isang document type. Ipapakita lamang ang mga field na kailangan para sa napiling dokumento. Ang output ay draft at kailangang i-review laban sa kasalukuyang controlled BJMP template bago pirmahan o ilabas.</p>
+<div class="doc-type-bar"><label for="dType">Piliin ang dokumento</label><select id="dType"><option>After Activity Report (AAR)</option><option>Memorandum</option><option>Memorandum Request</option><option>Communication Letter</option><option>Spot Report</option><option>Progress Report</option><option>Minutes of Meeting</option><option>General Order</option><option>Special Order</option></select></div>
+<div class="doc-workspace"><div class="doc-form">
+<div class="doc-section"><h3>1. Document details</h3><div class="docgrid">
+<div><label>Document date</label><input id="dDate" type="date"></div><div><label>Office / Unit</label><input id="dOffice" value="SIPOCOT DISTRICT JAIL"></div>
+<div><label>Reference number (if assigned)</label><input id="dRef" placeholder="Enter authorized reference number"></div><div><label>To / Recipient</label><input id="dTo" placeholder="Name, rank/title, office"></div>
+<div><label>From / Prepared by</label><input id="dFrom" value="JO1 Carl Benedict C. Dineros"></div><div class="wide"><label id="subjectLabel">Activity title</label><input id="dSubject" placeholder="Enter title or subject"></div>
+</div></div>
+<div class="doc-section"><h3 id="sectionTwoTitle">2. Activity information</h3><div class="docgrid">
+<div><label id="whenLabel">Date and time</label><input id="dWhen" placeholder="Enter date and time"></div><div><label id="whereLabel">Venue</label><input id="dWhere" placeholder="Enter venue"></div>
+<div class="wide"><label id="whatLabel">Background / Purpose</label><textarea id="dWhat" placeholder="Enter background or purpose"></textarea></div>
+<div class="wide"><label id="whoLabel">Participating personnel</label><textarea id="dWho" placeholder="List names, ranks, units and roles"></textarea></div>
+</div></div>
+<div class="doc-section"><h3 id="sectionThreeTitle">3. Narrative and results</h3><div class="docgrid">
+<div class="wide"><label id="detailsLabel">Activities conducted</label><textarea id="dDetails" placeholder="Provide the chronological narrative"></textarea></div>
+<div class="wide"><label id="actionLabel">Accomplishments / Recommendations</label><textarea id="dAction" placeholder="Enter results, actions, agreements or recommendations"></textarea></div>
+</div></div>
+<div class="doc-section"><h3>4. Review and approval routing</h3><div class="docgrid">
+<div><label>Noted by</label><input id="dNoted" placeholder="Name and rank/title"></div><div><label>Approved by / Authorized signatory</label><input id="dApproved" placeholder="Authorized signatory"></div>
+</div><p class="hint">Ang signatory at routing ay dapat piliin ayon sa kasalukuyang delegation of authority at office hierarchy.</p></div>
 <div class="actions"><button class="primary" id="generateDocx">Generate Word document (.docx)</button><button class="secondary" id="clearDoc">Clear form</button></div>
-<p class="smallhint" id="docStatus">Based on the publicly available BJMP Communications Policy PDF (MC-133, 21 Feb 2022). Confirm no later amendment applies. Draft only; no automatic approval, official numbering, or ISO certification claim.</p>
+<p class="smallhint" id="docStatus">Draft generator. Verify the selected BJMP annex, current letterhead artwork, exact spacing, routing and signatory authority before official use.</p>
+</div><aside class="doc-preview"><h3>Document checklist</h3><p class="hint">Before generating or releasing:</p><ul class="hint"><li>Confirm correct document category and annex.</li><li>Use approved unit letterhead and official logo artwork.</li><li>Confirm current signatory and routing.</li><li>Review pagination, footer, mantra and document control number.</li><li>Obtain authorized review and approval.</li></ul><div class="standards-note"><b>Formatting profile</b><p>Tahoma 12 body text; A4 or Folio; 1-inch margins; single spacing with one vertical space after paragraphs, subject to applicable annex-specific layout.</p><p>Logo size and placement follow the applicable BJMP Brand Identity Manual and approved letterhead.</p></div></aside></div>
 </section>
 <section class="panel"><h2>Production security rules</h2><ul class="hint"><li>Unit registration requires verification and approval by an authorized platform administrator.</li><li>Each jail's users, documents, uploads and audit records must be isolated by unit.</li><li>Unit administrators can manage only their own jail profile and authorized personnel.</li><li>Central templates may be distributed system-wide, while unit-specific branding remains separate.</li><li>Real deployment requires an approved server, secure authentication, server-side permissions, encrypted storage and daily backups.</li></ul></section>
-</main><footer>Changing Lives, Building a Safer Nation • Prototype only — do not enter confidential PDL or operational data. Templates mapped to publicly available BJMP-CDS-MC-133 (21 Feb 2022); verify current amendments and local QMS-controlled forms.</footer>
+</main><footer>Changing Lives, Building a Safer Nation • Prototype only — do not enter confidential PDL or operational data.</footer>
 <script>
-const KEY='bjmp_multi_unit_demo_v05';const initial={id:'sipocot',name:'SIPOCOT DISTRICT JAIL',number:'',region:'Region V',phone:'0930 335 9659',email:'r5.sipocotdi@bjmp.gov.ph',address:'Awayan, Sipocot, Camarines Sur',regionLogo:'',unitLogo:'',status:'Initial test unit'};let units=JSON.parse(localStorage.getItem(KEY)||'null')||[initial],active='sipocot';const $=id=>document.getElementById(id);function persist(){localStorage.setItem(KEY,JSON.stringify(units))}function activeRec(){return units.find(u=>u.id===active)||units[0]}function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function renderSelect(){$('activeUnit').innerHTML=units.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join('');$('activeUnit').value=activeRec().id}function renderTable(){$('unitTable').innerHTML='<table><thead><tr><th>Jail / Unit</th><th>Region</th><th>Status</th></tr></thead><tbody>'+units.map(u=>`<tr><td>${esc(u.name)}<br><span class="hint">${esc(u.number)}</span></td><td>${esc(u.region)}</td><td>${esc(u.status)}</td></tr>`).join('')+'</tbody></table>'}function fill(){let u=activeRec();$('pName').value=u.name||'';$('pNumber').value=u.number||'';$('pRegion').value=u.region||'';$('pPhone').value=u.phone||'';$('pEmail').value=u.email||'';$('pAddress').value=u.address||'';$('pRegionPreview').src=u.regionLogo||'';$('pUnitPreview').src=u.unitLogo||'';renderSelect();renderTable()}function readFile(input){return new Promise((resolve,reject)=>{let f=input.files[0];if(!f)return resolve('');if(f.size>2*1024*1024)return reject(Error('Logo file must be 2 MB or smaller.'));let r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(f)})}$('activeUnit').onchange=e=>{active=e.target.value;fill()};document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('hidden',x.id!==b.dataset.tab))});$('saveProfile').onclick=async()=>{try{let u=activeRec();Object.assign(u,{name:$('pName').value.trim(),number:$('pNumber').value.trim(),region:$('pRegion').value.trim(),phone:$('pPhone').value.trim(),email:$('pEmail').value.trim(),address:$('pAddress').value.trim()});let a=await readFile($('pRegionLogo')),b=await readFile($('pUnitLogo'));if(a)u.regionLogo=a;if(b)u.unitLogo=b;persist();fill();alert('Saved locally on this device.')}catch(e){alert(e.message||'Unable to save logo.')}};$('resetProfile').onclick=fill;$('submitUnit').onclick=async()=>{try{let name=$('nName').value.trim(),number=$('nNumber').value.trim(),region=$('nRegion').value,phone=$('nPhone').value.trim();if(!name||!number||!region||!phone||!$('nRegionLogo').files[0]||!$('nUnitLogo').files[0])return alert('Complete all required fields and upload both logos.');let r=await readFile($('nRegionLogo')),u=await readFile($('nUnitLogo'));let id='unit-'+Date.now();units.push({id,name,number,region,phone,email:$('nEmail').value.trim(),address:$('nAddress').value.trim(),regionLogo:r,unitLogo:u,status:'Local draft — pending verification'});persist();active=id;fill();alert('Sample unit profile saved on this device. No live registration or access has been created.');document.querySelector('[data-tab="directory"]').click()}catch(e){alert(e.message||'Unable to save.')}};$('exportData').onclick=()=>{let blob=new Blob([JSON.stringify(units,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bjmp-unit-profiles-demo.json';a.click();URL.revokeObjectURL(a.href)};$('importButton').onclick=()=>$('importFile').click();$('importFile').onchange=async e=>{try{let data=JSON.parse(await e.target.files[0].text());if(!Array.isArray(data))throw Error('Invalid file');units=data;active=units[0]?.id||'sipocot';persist();fill();alert('Profiles imported locally.')}catch(err){alert('Import failed: '+err.message)}}
-// BJMP Annex-based DOCX generator. Formatting rules transcribed from MC-133 PDF:
-// A4, 1-inch margins, Tahoma 12, black text, single spacing, one blank vertical space after paragraphs.
-const docxNS=window.docx;
-function val(id){return (document.getElementById(id)?.value||'').trim()}
-function lines(v){return (v||'').split(/\r?\n/).map(s=>s.trim()).filter(Boolean)}
-function p(text='',opts={}){return new docxNS.Paragraph({alignment:opts.align||docxNS.AlignmentType.LEFT,indent:opts.indent?{left:opts.indent}:undefined,spacing:{before:0,after:opts.after===undefined?120:opts.after,line:240},children:[new docxNS.TextRun({text:String(text||''),bold:!!opts.bold,font:'Tahoma',size:24,color:'000000'})]})}
-function labelLine(label,value){return p(`${label} : ${value||''}`,{after:120})}
-function heading(t){return p(t,{bold:true,after:120})}
-function paraLines(text,indent=0){return lines(text).flatMap((s)=>[p(s,{indent})])}
-function makeHeader(u){
- const unit=u?.name||val('dOffice')||'JAIL UNIT';
- const addr=u?.address||'';
- const phone=u?.phone||'';
- const email=u?.email||'';
- return [
-  p('Republic of the Philippines',{align:docxNS.AlignmentType.CENTER,after:0}),
-  p('Department of the Interior and Local Government',{align:docxNS.AlignmentType.CENTER,after:0}),
-  p('BUREAU OF JAIL MANAGEMENT AND PENOLOGY',{align:docxNS.AlignmentType.CENTER,bold:true,after:0}),
-  p(unit,{align:docxNS.AlignmentType.CENTER,bold:true,after:0}),
-  ...(addr?[p(addr,{align:docxNS.AlignmentType.CENTER,after:0})]:[]),
-  ...((phone||email)?[p([phone,email].filter(Boolean).join(' | '),{align:docxNS.AlignmentType.CENTER,after:0})]:[]),
-  p('“Changing Lives, Building a Safer Nation”',{align:docxNS.AlignmentType.CENTER,after:240})
- ];
-}
-function buildContent(type,u){
- const subject=val('dSubject')||'[SUBJECT]';
- const date=val('dDate')||'[DATE]';
- const recipient=val('dTo')||'[RECIPIENT]';
- const from=val('dFrom')||'[PREPARED BY]';
- const thru=val('dThru');
- const sign=val('dApproved')||'[AUTHORIZED SIGNATORY]';
- const out=makeHeader(u);
- const add=(t,o)=>out.push(p(t,o||{}));
- const addSec=(n,title,body)=>{out.push(heading(`${n}. ${title}`));paraLines(body,360).forEach(x=>out.push(x));};
- if(type==='MEMO'){
-  add('MEMORANDUM',{align:docxNS.AlignmentType.CENTER,bold:true});
-  out.push(labelLine('TO',recipient),labelLine('SUBJECT',subject),labelLine('DATE',date));
-  paraLines(val('dDetails')).forEach(x=>out.push(x));
-  if(val('dAction'))addSec('2','ACTION / INSTRUCTIONS',val('dAction'));
-  add('BY AUTHORITY OF THE WARDEN:');
-  add(sign,{bold:true}); add(val('dNoted'));
- } else if(type==='REQUEST'){
-  add('MEMORANDUM',{align:docxNS.AlignmentType.CENTER,bold:true});
-  out.push(labelLine('FOR',recipient),labelLine('SUBJECT',subject),labelLine('DATE',date));
-  add('ACTION REQUESTED:',{bold:true}); paraLines(val('dRequested')||val('dWhat'),360).forEach(x=>out.push(x));
-  add('BACKGROUND/JUSTIFICATION:',{bold:true}); paraLines(val('dBackground')||val('dDetails'),360).forEach(x=>out.push(x));
-  add('RECOMMENDATION:',{bold:true}); paraLines(val('dRecommendations')||val('dAction'),360).forEach(x=>out.push(x));
-  if(val('dDecision')){add('DECISION MATRIX',{bold:true});add(val('dDecision'));}
-  add('Recommended by:');add(from,{bold:true});add(val('dNoted'));
-  add('[ ] Approved     [ ] Disapproved');add('Remarks: ______________________________');
-  add('Encl: ______________________________');add('Cc: '+val('dDistribution'));
-  add(sign,{bold:true});
- } else if(type==='AAR'){
-  add('MEMORANDUM',{bold:true});
-  out.push(labelLine('FOR',recipient),labelLine('SUBJECT',subject),labelLine('DATE',date));
-  addSec('1','REFERENCE/S',val('dReferences'));
-  addSec('2','MISSION/PURPOSE',val('dMission')||val('dWhat'));
-  add(`3. PLACES COVERED: ${val('dPlaces')}`);
-  add(`4. DATE COVERED: ${val('dCovered')||val('dWhen')}`);
-  add(`5. PARTICIPANTS: ${val('dWho')}`);
-  addSec('6','NARRATIVE',val('dDetails'));
-  addSec('7','ISSUES/CONCERNS/RECOMMENDATIONS',[val('dIssues'),val('dRecommendations'),val('dAction')].filter(Boolean).join('\n'));
-  add(sign,{bold:true});add(val('dNoted'));
- } else if(type==='SPOT'||type==='PROGRESS'){
-  add('MEMORANDUM',{bold:true});
-  out.push(labelLine('FOR',recipient));
-  if(thru)out.push(labelLine('THRU',thru));
-  out.push(labelLine('SUBJECT',subject),labelLine('DATE',date));
-  addSec('1','REFERENCE/S',val('dReferences'));
-  if(type==='SPOT'){
-   addSec('2','DETAILS/FACTS OF THE CASE',val('dDetails')||val('dWhat'));
-   addSec('3','ACTION/S TAKEN',val('dAction'));
-   addSec('4','DISPOSITION/FINDINGS',val('dDecision'));
-   addSec('5','ISSUES/CONCERNS',val('dIssues'));
-   addSec('6','RECOMMENDATIONS',val('dRecommendations'));
-  } else {
-   addSec('2','BACKGROUND / CURRENT STATUS',val('dBackground')||val('dDetails'));
-   addSec('3','ACCOMPLISHMENTS / ACTIONS TAKEN',val('dAction'));
-   addSec('4','ISSUES / CONCERNS',val('dIssues'));
-   addSec('5','RECOMMENDATIONS / NEXT STEPS',val('dRecommendations'));
-  }
-  add(sign,{bold:true});add(val('dNoted'));
- } else if(type==='LETTER'){
-  add(date);
-  add(recipient);
-  add(val('dWhere'));
-  if(thru)add('THRU : '+thru);
-  add(val('dSalutation')||'Dear Sir/Madam:');
-  paraLines(val('dDetails')||val('dWhat')).forEach(x=>out.push(x));
-  if(val('dAction'))paraLines(val('dAction')).forEach(x=>out.push(x));
-  add(val('dClose')||'Very truly yours,');
-  add(sign,{bold:true});add(val('dNoted'));
-  if(val('dDistribution'))add('Cc: '+val('dDistribution'));
- } else if(type==='MINUTES'){
-  add('MINUTES OF THE MEETING',{align:docxNS.AlignmentType.CENTER,bold:true});
-  out.push(labelLine('DATE / TIME',val('dWhen')||date),labelLine('VENUE',val('dWhere')),labelLine('PRESIDER',val('dPresider')),labelLine('PARTICIPANTS',val('dWho')));
-  addSec('1','AGENDA / TOPICS',val('dAgenda')||val('dWhat'));
-  addSec('2','DISCUSSION / PROCEEDINGS',val('dDetails'));
-  addSec('3','DECISIONS / AGREEMENTS',val('dAgreements')||val('dAction'));
-  addSec('4','ACTION ITEMS / NEXT MEETING',val('dNext')+'\n'+val('dRecommendations'));
-  add('Prepared by:');add(from,{bold:true});add('Noted by:');add(sign,{bold:true});
- } else if(type==='NOTICE'){
-  add('NOTICE OF MEETING',{align:docxNS.AlignmentType.CENTER,bold:true});
-  out.push(labelLine('TO',recipient),labelLine('SUBJECT',subject),labelLine('DATE / TIME',val('dWhen')),labelLine('VENUE',val('dWhere')));
-  add('AGENDA:',{bold:true});paraLines(val('dAgenda')||val('dWhat'),360).forEach(x=>out.push(x));
-  add('For information and guidance.');add(from,{bold:true});
- } else if(type==='EVENT'){
-  add('EVENT PROFILE SHEET',{align:docxNS.AlignmentType.CENTER,bold:true});
-  out.push(labelLine('ACTIVITY / EVENT',subject),labelLine('DATE / TIME',val('dWhen')),labelLine('VENUE',val('dWhere')),labelLine('PROPONENT / OFFICE',from));
-  addSec('1','RATIONALE / PURPOSE',val('dMission')||val('dWhat'));
-  addSec('2','OBJECTIVES',val('dDetails'));
-  addSec('3','PARTICIPANTS',val('dWho'));
-  addSec('4','PROGRAM / KEY ACTIVITIES',val('dAgenda')||val('dAction'));
-  addSec('5','REQUIREMENTS / ISSUES / RECOMMENDATIONS',val('dIssues')+'\n'+val('dRecommendations'));
- } else if(type==='ROUTING'){
-  add('ROUTING SLIP — JAIL UNIT',{align:docxNS.AlignmentType.CENTER,bold:true});
-  out.push(labelLine('DOCUMENT / SUBJECT',subject),labelLine('ORIGINATING UNIT',u?.name||val('dOffice')),labelLine('DATE',date),labelLine('FOR / TO',recipient),labelLine('THRU',thru));
-  add('ACTION / PURPOSE:',{bold:true});paraLines(val('dWhat')||val('dDetails'),360).forEach(x=>out.push(x));
-  add('ROUTING / ACTION OFFICE');paraLines(val('dDistribution')||val('dAction'),360).forEach(x=>out.push(x));
-  add('REMARKS:');paraLines(val('dDecision'),360).forEach(x=>out.push(x));
-  add('Prepared by: '+from);add('Received by / Date / Time: ______________________________');
- } else {
-  add('DRAFT — OTHER / COMMON JAIL ISSUANCE',{align:docxNS.AlignmentType.CENTER,bold:true});
-  add('This is a working draft only. Select and apply the currently approved Common Jail Issuance format (Annex N) and any applicable separate issuance before official use.');
-  out.push(labelLine('TITLE / SUBJECT',subject),labelLine('DATE',date));
-  paraLines(val('dDetails')).forEach(x=>out.push(x));
-  add('Prepared by: '+from);add('Reviewed / Approved by: '+sign);
- }
- return out;
-}
-$('generateDocx').onclick=async()=>{
- try{
-  if(!window.docxNS && !window.docx)throw Error('Word library is not available. Check internet connection and reload.');
-  const t=$('dType').value;
-  const u=activeRec();
-  const body=buildContent(t,u);
-  const d=new docxNS.Document({sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:1440,right:1440,bottom:1440,left:1440}}},children:body}]});
-  const blob=await docxNS.Packer.toBlob(d);
-  const a=document.createElement('a');const url=URL.createObjectURL(blob);a.href=url;
-  a.download=`${(u.name||'BJMP').replace(/[^A-Za-z0-9-]+/g,'_')}_${t}_${(val('dDate')||new Date().toISOString().slice(0,10))}.docx`;
-  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
-  $('docStatus').textContent='DOCX draft generated using the selected MC-133 annex structure. Review every field, unit letterhead, routing, current amendment and signatory authority before official use.';
- }catch(e){$('docStatus').textContent='Generation error: '+e.message;alert('Hindi nagawa ang Word file: '+e.message);}
+const KEY='bjmp_multi_unit_demo_v05';const initial={id:'sipocot',name:'SIPOCOT DISTRICT JAIL',number:'',region:'Region V',phone:'0930 335 9659',email:'r5.sipocotdi@bjmp.gov.ph',address:'Awayan, Sipocot, Camarines Sur',regionLogo:'',unitLogo:'',status:'Initial test unit'};let units=JSON.parse(localStorage.getItem(KEY)||'null')||[initial],active='sipocot';const $=id=>document.getElementById(id);function persist(){localStorage.setItem(KEY,JSON.stringify(units))}function activeRec(){return units.find(u=>u.id===active)||units[0]}function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}function renderSelect(){$('activeUnit').innerHTML=units.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join('');$('activeUnit').value=activeRec().id}function renderTable(){$('unitTable').innerHTML='<table><thead><tr><th>Jail / Unit</th><th>Region</th><th>Status</th></tr></thead><tbody>'+units.map(u=>`<tr><td>${esc(u.name)}<br><span class="hint">${esc(u.number)}</span></td><td>${esc(u.region)}</td><td>${esc(u.status)}</td></tr>`).join('')+'</tbody></table>'}function fill(){let u=activeRec();$('pName').value=u.name||'';$('pNumber').value=u.number||'';$('pRegion').value=u.region||'';$('pPhone').value=u.phone||'';$('pEmail').value=u.email||'';$('pAddress').value=u.address||'';$('pRegionPreview').src=u.regionLogo||'';$('pUnitPreview').src=u.unitLogo||'';renderSelect();renderTable()}function readFile(input){return new Promise((resolve,reject)=>{let f=input.files[0];if(!f)return resolve('');if(f.size>2*1024*1024)return reject(Error('Logo file must be 2 MB or smaller.'));let r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(f)})}$('activeUnit').onchange=e=>{active=e.target.value;fill()};document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('hidden',x.id!==b.dataset.tab))});$('saveProfile').onclick=async()=>{try{let u=activeRec();Object.assign(u,{name:$('pName').value.trim(),number:$('pNumber').value.trim(),region:$('pRegion').value.trim(),phone:$('pPhone').value.trim(),email:$('pEmail').value.trim(),address:$('pAddress').value.trim()});let a=await readFile($('pRegionLogo')),b=await readFile($('pUnitLogo'));if(a)u.regionLogo=a;if(b)u.unitLogo=b;persist();fill();alert('Saved locally on this device.')}catch(e){alert(e.message||'Unable to save logo.')}};$('resetProfile').onclick=fill;$('submitUnit').onclick=async()=>{try{let name=$('nName').value.trim(),number=$('nNumber').value.trim(),region=$('nRegion').value,phone=$('nPhone').value.trim();if(!name||!number||!region||!phone||!$('nRegionLogo').files[0]||!$('nUnitLogo').files[0])return alert('Complete all required fields and upload both logos.');let r=await readFile($('nRegionLogo')),u=await readFile($('nUnitLogo'));let id='unit-'+Date.now();units.push({id,name,number,region,phone,email:$('nEmail').value.trim(),address:$('nAddress').value.trim(),regionLogo:r,unitLogo:u,status:'Local draft — pending verification'});persist();active=id;fill();alert('Sample unit profile saved on this device. No live registration or access has been created.');document.querySelector('[data-tab="directory"]').click()}catch(e){alert(e.message||'Unable to save.')}};$('exportData').onclick=()=>{let blob=new Blob([JSON.stringify(units,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bjmp-unit-profiles-demo.json';a.click();URL.revokeObjectURL(a.href)};$('importButton').onclick=()=>$('importFile').click();$('importFile').onchange=async e=>{try{let data=JSON.parse(await e.target.files[0].text());if(!Array.isArray(data))throw Error('Invalid file');units=data;active=units[0]?.id||'sipocot';persist();fill();alert('Profiles imported locally.')}catch(err){alert('Import failed: '+err.message)}};fill();
+const docProfiles={
+'After Activity Report (AAR)':{s:'Activity title',two:'2. Activity information',three:'3. Narrative of activities and results',w:'Date and time of activity',v:'Venue',what:'Background / Objectives',who:'Participating personnel / agencies',details:'Activities conducted (chronological narrative)',action:'Accomplishments, issues and recommendations'},
+'Memorandum':{s:'Subject',two:'2. Memorandum routing and particulars',three:'3. Body of memorandum',w:'Date / deadline (if applicable)',v:'Office / location (if applicable)',what:'Purpose / Background',who:'For / To / Thru (as applicable)',details:'Main text with numbered paragraphs',action:'Action required / instructions'},
+'Memorandum Request':{s:'Subject of request',two:'2. Request particulars',three:'3. Justification and recommendation',w:'Required date / period',v:'Location / office',what:'Action requested',who:'Recipient / offices concerned',details:'Background and justification',action:'Recommendation / decision requested'},
+'Communication Letter':{s:'Subject / reference',two:'2. Addressee information',three:'3. Letter body',w:'Date of letter',v:'Complete mailing address',what:'Purpose of communication',who:'Addressee name, title and organization',details:'Full-block letter body',action:'Closing / requested action'},
+'Spot Report':{s:'Incident / event',two:'2. Incident information',three:'3. Initial report and actions taken',w:'Date and time of incident',v:'Exact location',what:'What happened / incident classification',who:'Persons involved / reporting personnel',details:'Circumstances and chronological details',action:'Immediate actions taken / assistance / follow-up'},
+'Progress Report':{s:'Project / activity title',two:'2. Reporting period and status',three:'3. Accomplishments and next steps',w:'Reporting period',v:'Project / activity location',what:'Objective / scope',who:'Responsible personnel / offices',details:'Progress and accomplishments',action:'Issues, constraints and next steps'},
+'Minutes of Meeting':{s:'Meeting title',two:'2. Meeting particulars',three:'3. Proceedings and resolutions',w:'Date and time',v:'Venue',what:'Agenda / purpose',who:'Attendees and presiding officer',details:'Discussion per agenda item',action:'Agreements, responsible persons and deadlines'},
+'General Order':{s:'Order title / subject',two:'2. Issuance particulars',three:'3. Provisions and effectivity',w:'Effectivity date',v:'Coverage / office',what:'Purpose and authority',who:'Personnel / units covered',details:'Numbered provisions',action:'Effectivity / supersession / implementation'},
+'Special Order':{s:'Order title / subject',two:'2. Assignment particulars',three:'3. Directives and effectivity',w:'Inclusive dates',v:'Duty station / venue',what:'Purpose / authority',who:'Personnel covered and assignments',details:'Specific assignments / instructions',action:'Effectivity / compliance instructions'}
 };
-
-;fill();
+function updateDocProfile(){const p=docProfiles[$('dType').value];if(!p)return;$('subjectLabel').textContent=p.s;$('sectionTwoTitle').textContent=p.two;$('sectionThreeTitle').textContent=p.three;$('whenLabel').textContent=p.w;$('whereLabel').textContent=p.v;$('whatLabel').textContent=p.what;$('whoLabel').textContent=p.who;$('detailsLabel').textContent=p.details;$('actionLabel').textContent=p.action;}
+$('dType').addEventListener('change',updateDocProfile);updateDocProfile();
+$('clearDoc').addEventListener('click',()=>{['dDate','dRef','dTo','dSubject','dWhen','dWhere','dWhat','dWho','dDetails','dAction','dNoted','dApproved'].forEach(id=>$(id).value='');$('dOffice').value='SIPOCOT DISTRICT JAIL';$('dFrom').value='JO1 Carl Benedict C. Dineros';});
 </script></body></html>
