@@ -1,0 +1,9 @@
+{
+  "name": "BJMP Document Automation System",
+  "short_name": "BJMP Docs",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#edf3f8",
+  "theme_color": "#081827",
+  "icons": []
+}
