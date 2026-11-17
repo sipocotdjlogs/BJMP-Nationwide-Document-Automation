@@ -1,23 +1,25 @@
-BJMP NATIONWIDE DOCUMENT AUTOMATION — VERSION 1.0
-Sipocot District Jail initial deployment prototype
+BJMP NATIONWIDE DOCUMENT AUTOMATION — VERSION 1.1
+Sipocot District Jail working prototype
 
-NEW IN VERSION 1.0
-- Multiple JPG/PNG photo upload for documentation.
-- EXIF DateTimeOriginal/CreateDate/ModifyDate extraction when available.
-- Chronological photo sorting.
-- Earliest readable photo timestamp is suggested as activity start.
-- User can review/correct the confirmed activity start.
-- Editable photo captions.
-- Live document preview and browser Print / Save as PDF.
-- DOCX generation with photo evidence and captions.
+FIXES / FEATURES
+- Rebuilt from the clean v0.9 source so external scripts are correctly closed and loaded.
+- One DOCX generator handler only (removed duplicated/broken v1.0 script blocks).
+- Added two distinct AAR layouts based on the two user-provided AAR samples:
+  1) Sipocot District Jail, November 17, 2026: centered Sipocot letterhead, MEMORANDUM, FOR, SUBJECT, DATE, and sections 1–7.
+  2) BJMP Regional Office V / Sipocot, May 20, 2025: Regional Office V heading, SDJLOGISTIC, MEMORANDUM, FOR, THRU, SUBJECT, DATE, and the source's References, Mission/Purpose, Place/s Covered, Date Covered, Participants, Narrative, and Issues/Concerns/Recommendations sequence.
+- Multiple JPG/PNG photo upload.
+- EXIF DateTimeOriginal/CreateDate/ModifyDate reading when available.
+- Photos sorted earliest to latest; earliest readable timestamp suggested as activity start.
+- Manual review/correction of activity start and editable captions.
+- Live preview and browser Print / Save as PDF.
+- DOCX generation with selected AAR layout and photo documentation.
 
-IMPORTANT LIMITATIONS
-- This is a local browser prototype. It does not provide central multi-unit synchronization, secure user accounts, server-side access controls, or approved records retention.
-- Photo timestamps are metadata and are not proof by themselves that an activity started at that time. Verify before signing.
-- EXIF may be absent, stripped, or incorrect. Manual review is required.
-- The generated document is a draft framework, not a verified reproduction of every current BJMP MC annex. Check current controlled BJMP templates, applicable MCs, official letterhead, QMS procedures, signatory authority, and paper size before official use.
-- ISO 9001 is a quality management system standard; it does not prescribe a universal BJMP document layout.
-- Do not upload confidential PDL, personnel, security, or operational records to this public GitHub Pages prototype.
+IMPORTANT
+- The two layouts reproduce the structure of the uploaded examples, not a claim of official approval or full MC compliance.
+- Confirm current controlled BJMP MC templates, correct approved letterhead/logo, QMS procedure, routing, signatories, and paper size before official use.
+- EXIF timestamp may be absent, stripped, or inaccurate; it is not proof of the actual activity start. Verify before signing.
+- This is a browser-side prototype. It does not provide secure centralized multi-unit synchronization, role-based server access, or official records retention.
+- Do not upload confidential PDL, personnel, security, or operational records to a public GitHub Pages site.
 
-HOW TO DEPLOY
-Upload/replace index.html and README.txt in the repository root. Keep the existing assets/ folder, manifest.json, and sw.js. Commit changes, wait for GitHub Pages deployment, then reload the site.
+DEPLOY
+In the repository root, replace index.html and README.txt with these Version 1.1 files. Keep the existing assets/ folder, manifest.json, and sw.js. Commit the changes and wait for GitHub Pages deployment. Then reload the site (hard refresh or Incognito if cached).
